@@ -5,13 +5,47 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Checkbox } from "@/components/ui/checkbox"
+import { Button } from "@/components/ui/button"
 import {
   Map,
   CheckCircle2,
   Circle,
   Clock,
   BookOpen,
+  Award,
+  ArrowRight,
+  TrendingUp,
+  Plus,
+  Sparkles,
 } from "lucide-react"
+
+const recentlyCompleted = [
+  { skill: "ES6+ Advanced Topics", date: "2 days ago", xp: 50 },
+  { skill: "TypeScript Generics", date: "3 days ago", xp: 60 },
+  { skill: "Async Patterns", date: "5 days ago", xp: 45 },
+  { skill: "Advanced Hooks", date: "1 week ago", xp: 55 },
+  { skill: "State Management", date: "1 week ago", xp: 50 },
+]
+
+const remainingSkills = [
+  { skill: "Performance Optimization", week: 2, priority: "High" },
+  { skill: "REST API Design", week: 3, priority: "High" },
+  { skill: "Node.js & Express", week: 3, priority: "High" },
+  { skill: "Database Fundamentals", week: 3, priority: "Medium" },
+  { skill: "Git Workflow", week: 4, priority: "Medium" },
+  { skill: "Unit Testing", week: 4, priority: "Medium" },
+  { skill: "CI/CD Pipelines", week: 4, priority: "Low" },
+  { skill: "Mock Interviews", week: 4, priority: "Low" },
+]
+
+const trendingSkills = [
+  { skill: "Next.js App Router", demand: "Very High", learners: "12.4k", tag: "Hot" },
+  { skill: "Docker & Containers", demand: "High", learners: "9.8k", tag: "Trending" },
+  { skill: "System Design", demand: "Very High", learners: "15.1k", tag: "Hot" },
+  { skill: "GraphQL", demand: "Medium", learners: "6.2k", tag: "New" },
+  { skill: "Redis & Caching", demand: "High", learners: "5.7k", tag: null },
+  { skill: "Tailwind CSS", demand: "High", learners: "11.3k", tag: "Popular" },
+]
 
 interface Task {
   id: string
@@ -142,6 +176,142 @@ export default function RoadmapPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Skills Showcase */}
+      <div className="grid gap-6 md:grid-cols-3">
+        {/* Recently Completed */}
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-2.5">
+              <div className="flex items-center justify-center size-9 rounded-lg bg-success/10">
+                <Award className="size-4 text-success" />
+              </div>
+              <div>
+                <CardTitle className="text-sm font-medium">Recently Completed</CardTitle>
+                <p className="text-[11px] text-muted-foreground">{recentlyCompleted.length} skills mastered</p>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-1.5">
+            {recentlyCompleted.map((item) => (
+              <div
+                key={item.skill}
+                className="flex items-center gap-3 rounded-lg px-3 py-2 bg-success/[0.04] border border-success/10"
+              >
+                <CheckCircle2 className="size-4 text-success shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-foreground truncate">{item.skill}</p>
+                  <p className="text-[11px] text-muted-foreground">{item.date}</p>
+                </div>
+                <Badge variant="secondary" className="bg-success/10 text-success border-0 text-[10px] px-1.5 py-0 shrink-0">
+                  +{item.xp} XP
+                </Badge>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+
+        {/* Remaining Skills */}
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-2.5">
+              <div className="flex items-center justify-center size-9 rounded-lg bg-primary/10">
+                <ArrowRight className="size-4 text-primary" />
+              </div>
+              <div>
+                <CardTitle className="text-sm font-medium">Left to Complete</CardTitle>
+                <p className="text-[11px] text-muted-foreground">{remainingSkills.length} skills remaining</p>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-1.5">
+            {remainingSkills.slice(0, 5).map((item) => (
+              <div
+                key={item.skill}
+                className="flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-muted/40 transition-colors"
+              >
+                <Circle className="size-4 text-muted-foreground/50 shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-foreground truncate">{item.skill}</p>
+                  <p className="text-[11px] text-muted-foreground">Week {item.week}</p>
+                </div>
+                <Badge
+                  variant="secondary"
+                  className={`text-[10px] px-1.5 py-0 border-0 shrink-0 ${
+                    item.priority === "High"
+                      ? "bg-destructive/10 text-destructive"
+                      : item.priority === "Medium"
+                        ? "bg-warning/10 text-warning-foreground"
+                        : "bg-muted text-muted-foreground"
+                  }`}
+                >
+                  {item.priority}
+                </Badge>
+              </div>
+            ))}
+            {remainingSkills.length > 5 && (
+              <p className="text-xs text-muted-foreground text-center pt-1">
+                +{remainingSkills.length - 5} more skills
+              </p>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Trending Skills */}
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-2.5">
+              <div className="flex items-center justify-center size-9 rounded-lg bg-primary/10">
+                <TrendingUp className="size-4 text-primary" />
+              </div>
+              <div>
+                <CardTitle className="text-sm font-medium">Trending Skills</CardTitle>
+                <p className="text-[11px] text-muted-foreground">Popular among students</p>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-1.5">
+            {trendingSkills.map((item) => (
+              <div
+                key={item.skill}
+                className="flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-muted/40 transition-colors group cursor-pointer"
+              >
+                <Sparkles className="size-4 text-primary/60 group-hover:text-primary shrink-0 transition-colors" />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-medium text-foreground truncate">{item.skill}</p>
+                    {item.tag && (
+                      <Badge
+                        variant="secondary"
+                        className={`text-[9px] px-1.5 py-0 border-0 shrink-0 ${
+                          item.tag === "Hot"
+                            ? "bg-destructive/10 text-destructive"
+                            : item.tag === "Trending"
+                              ? "bg-primary/10 text-primary"
+                              : item.tag === "New"
+                                ? "bg-success/10 text-success"
+                                : "bg-muted text-muted-foreground"
+                        }`}
+                      >
+                        {item.tag}
+                      </Badge>
+                    )}
+                  </div>
+                  <p className="text-[11px] text-muted-foreground">{item.learners} learners &middot; {item.demand} demand</p>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="size-7 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+                >
+                  <Plus className="size-3.5" />
+                  <span className="sr-only">Add {item.skill}</span>
+                </Button>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Weekly Breakdown */}
       <div className="flex flex-col gap-5">

@@ -52,25 +52,94 @@ const suggestedRoles = [
   },
 ]
 
-const mockMatch = {
+type MatchResult = {
+  matchPercentage: number
+  matchedKeywords: string[]
+  missingKeywords: string[]
+  tips: string[]
+}
+
+const roleMatchData: Record<string, MatchResult> = {
+  "Cyber Security Analyst": {
+    matchPercentage: 32,
+    matchedKeywords: ["Python", "Linux basics", "Networking fundamentals"],
+    missingKeywords: ["SIEM tools", "Penetration testing", "Firewalls", "IDS/IPS", "OWASP", "ISO 27001", "NIST framework", "Security auditing", "Risk assessment"],
+    tips: [
+      "Your profile is heavily web-dev focused -- consider security certifications like CompTIA Security+ or CEH",
+      "Learn OWASP Top 10 vulnerabilities since you already build web apps",
+      "Add hands-on experience with tools like Wireshark, Nmap, or Burp Suite",
+      "Explore SIEM platforms like Splunk or ELK Stack through free labs",
+      "Highlight any security practices you follow in your current projects (input validation, auth, etc.)",
+    ],
+  },
+  "AI/ML Engineer": {
+    matchPercentage: 38,
+    matchedKeywords: ["Python", "Git", "Data preprocessing basics", "API development"],
+    missingKeywords: ["TensorFlow", "PyTorch", "scikit-learn", "NLP", "Computer Vision", "MLOps", "AWS SageMaker", "Deep Learning", "Model deployment"],
+    tips: [
+      "Start with scikit-learn for classical ML, then move to TensorFlow or PyTorch for deep learning",
+      "Build a project combining your MERN skills with ML -- like a sentiment analysis dashboard",
+      "Learn data handling with Pandas and NumPy if you haven't already",
+      "Explore MLOps basics -- Docker + model serving would leverage your existing DevOps knowledge",
+      "Take a structured course on ML fundamentals to build theoretical foundations",
+    ],
+  },
+  "MERN Stack Developer": {
+    matchPercentage: 85,
+    matchedKeywords: ["MongoDB", "Express.js", "React.js", "Node.js", "REST APIs", "Git", "Agile", "JWT authentication", "HTML/CSS", "JavaScript"],
+    missingKeywords: ["TypeScript", "Redux", "AWS/Vercel deployment"],
+    tips: [
+      "Add TypeScript to your projects -- it's almost expected for MERN roles now",
+      "Showcase a project with Redux or Zustand for state management",
+      "Deploy at least one project on AWS EC2 or Vercel and mention the deployment process",
+      "Your match is strong! Focus on polishing project descriptions with measurable outcomes",
+      "Consider adding testing experience (Jest, React Testing Library) to stand out further",
+    ],
+  },
+  "Data Analyst": {
+    matchPercentage: 28,
+    matchedKeywords: ["Python basics", "Problem solving", "Git"],
+    missingKeywords: ["SQL proficiency", "Tableau", "Power BI", "Excel (advanced)", "Statistics", "Data modeling", "ETL processes", "A/B testing", "Data visualization"],
+    tips: [
+      "SQL is the #1 skill for data analysts -- practice on platforms like LeetCode or HackerRank",
+      "Learn Tableau or Power BI to create dashboards -- many free resources available",
+      "Strengthen your statistics knowledge: hypothesis testing, regression, probability",
+      "Build a data analysis portfolio project using publicly available datasets (Kaggle)",
+      "Your programming background is an advantage -- learn Pandas and Matplotlib for Python-based analysis",
+    ],
+  },
+  "Cloud Engineer": {
+    matchPercentage: 35,
+    matchedKeywords: ["Git", "Linux basics", "Docker basics", "Node.js"],
+    missingKeywords: ["AWS/Azure/GCP", "Terraform", "Kubernetes", "CI/CD pipelines", "Serverless architecture", "Infrastructure-as-Code", "Networking", "Monitoring tools"],
+    tips: [
+      "Get AWS Cloud Practitioner certified as a first step -- it covers the fundamentals",
+      "Learn Docker in-depth and then move to Kubernetes for container orchestration",
+      "Practice setting up CI/CD pipelines using GitHub Actions or Jenkins",
+      "Explore Terraform for infrastructure-as-code -- highly valued in cloud roles",
+      "Deploy your existing MERN projects on AWS (EC2, S3, Lambda) to build practical experience",
+    ],
+  },
+  "Database Administrator": {
+    matchPercentage: 45,
+    matchedKeywords: ["MongoDB", "SQL basics", "Git", "Node.js (backend)", "Data management"],
+    missingKeywords: ["PostgreSQL", "MySQL (advanced)", "Redis", "Database indexing", "Replication", "Sharding", "Stored procedures", "Performance tuning", "Backup/Recovery"],
+    tips: [
+      "You already use MongoDB -- deepen your knowledge with indexing, aggregation pipelines, and sharding",
+      "Learn PostgreSQL or MySQL in-depth: joins, views, stored procedures, triggers",
+      "Practice database performance tuning and query optimization techniques",
+      "Explore Redis for caching -- it pairs well with your existing MERN stack",
+      "Study backup/recovery strategies and replication setups for production databases",
+    ],
+  },
+}
+
+const defaultMatch: MatchResult = {
   matchPercentage: 73,
-  matchedKeywords: [
-    "React",
-    "JavaScript",
-    "HTML/CSS",
-    "REST APIs",
-    "Git",
-    "Agile",
-  ],
-  missingKeywords: [
-    "TypeScript",
-    "GraphQL",
-    "Docker",
-    "AWS",
-    "Unit Testing",
-  ],
+  matchedKeywords: ["React", "JavaScript", "HTML/CSS", "REST APIs", "Git", "Agile"],
+  missingKeywords: ["TypeScript", "GraphQL", "Docker", "AWS", "Unit Testing"],
   tips: [
-    "Add TypeScript experience to your resume - it is highly demanded for this role",
+    "Add TypeScript experience to your resume -- it is highly demanded",
     "Mention any experience with containerization tools like Docker",
     "Include cloud platform experience (AWS, GCP, or Azure)",
     "Highlight any testing frameworks you have used in projects",
@@ -78,10 +147,26 @@ const mockMatch = {
   ],
 }
 
+function getSelectedRole(jd: string): string | null {
+  const role = suggestedRoles.find((r) => r.jd === jd)
+  return role ? role.title : null
+}
+
+function getMatchLabel(pct: number) {
+  if (pct >= 80) return { text: "Excellent Match", color: "text-success" }
+  if (pct >= 60) return { text: "Good Match", color: "text-primary" }
+  if (pct >= 40) return { text: "Partial Match", color: "text-warning-foreground" }
+  return { text: "Low Match", color: "text-destructive" }
+}
+
 export default function JDMatchPage() {
   const [jobDescription, setJobDescription] = useState("")
   const [showResults, setShowResults] = useState(false)
   const [isMatching, setIsMatching] = useState(false)
+
+  const selectedRole = getSelectedRole(jobDescription)
+  const matchData = selectedRole && roleMatchData[selectedRole] ? roleMatchData[selectedRole] : defaultMatch
+  const matchLabel = getMatchLabel(matchData.matchPercentage)
 
   function handleMatch() {
     if (!jobDescription.trim()) return
@@ -207,25 +292,29 @@ export default function JDMatchPage() {
                       strokeDasharray={2 * Math.PI * 50}
                       strokeDashoffset={
                         2 * Math.PI * 50 -
-                        (mockMatch.matchPercentage / 100) * 2 * Math.PI * 50
+                        (matchData.matchPercentage / 100) * 2 * Math.PI * 50
                       }
                       className="stroke-primary transition-all duration-700"
                     />
                   </svg>
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
                     <span className="text-2xl font-bold text-foreground">
-                      {mockMatch.matchPercentage}%
+                      {matchData.matchPercentage}%
                     </span>
                   </div>
                 </div>
                 <div className="flex flex-col gap-1">
-                  <p className="text-lg font-semibold text-foreground">
-                    Good Match
+                  <p className={`text-lg font-semibold ${matchLabel.color}`}>
+                    {matchLabel.text}
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    Your resume matches {mockMatch.matchPercentage}% of the job
-                    requirements. A few skill additions could boost this
-                    significantly.
+                    Your resume matches {matchData.matchPercentage}% of the job
+                    requirements.{" "}
+                    {matchData.matchPercentage >= 70
+                      ? "Great fit! Just a few tweaks can make it even stronger."
+                      : matchData.matchPercentage >= 45
+                        ? "Some skill additions could boost this significantly."
+                        : "This role requires a different skill set. See the missing keywords to plan your learning path."}
                   </p>
                 </div>
               </div>
@@ -234,10 +323,10 @@ export default function JDMatchPage() {
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">Match Progress</span>
                   <span className="font-medium text-foreground">
-                    {mockMatch.matchPercentage}%
+                    {matchData.matchPercentage}%
                   </span>
                 </div>
-                <Progress value={mockMatch.matchPercentage} className="h-3" />
+                <Progress value={matchData.matchPercentage} className="h-3" />
               </div>
             </CardContent>
           </Card>
@@ -253,7 +342,7 @@ export default function JDMatchPage() {
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2">
-                  {mockMatch.matchedKeywords.map((keyword) => (
+                  {matchData.matchedKeywords.map((keyword) => (
                     <Badge
                       key={keyword}
                       variant="secondary"
@@ -277,7 +366,7 @@ export default function JDMatchPage() {
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2">
-                  {mockMatch.missingKeywords.map((keyword) => (
+                  {matchData.missingKeywords.map((keyword) => (
                     <Badge
                       key={keyword}
                       variant="secondary"
@@ -302,7 +391,7 @@ export default function JDMatchPage() {
             </CardHeader>
             <CardContent>
               <ul className="flex flex-col gap-3">
-                {mockMatch.tips.map((tip, i) => (
+                {matchData.tips.map((tip, i) => (
                   <li key={i} className="flex items-start gap-3">
                     <span className="flex items-center justify-center size-6 rounded-full bg-primary/10 text-xs font-semibold text-primary shrink-0">
                       {i + 1}

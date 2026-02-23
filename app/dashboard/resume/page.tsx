@@ -17,7 +17,7 @@ import {
 
 const mockAnalysis = {
   score: 78,
-  bestFitRole: "Frontend Developer",
+  bestFitRole: "MERN Stack Developer",
   missingSkills: [
     "TypeScript advanced patterns",
     "System Design basics",

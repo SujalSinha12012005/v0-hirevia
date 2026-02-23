@@ -28,12 +28,12 @@ import {
 } from "lucide-react"
 
 const students = [
-  { id: 1, name: "Arjun Mehta", resumeScore: 78, bestRole: "Frontend Developer", readiness: "Intermediate" },
+  { id: 1, name: "Arjun Mehta", resumeScore: 78, bestRole: "MERN Stack Developer", readiness: "Intermediate" },
   { id: 2, name: "Priya Sharma", resumeScore: 92, bestRole: "Full Stack Developer", readiness: "Placement Ready" },
   { id: 3, name: "Ravi Kumar", resumeScore: 45, bestRole: "Backend Developer", readiness: "Beginner" },
   { id: 4, name: "Ananya Patel", resumeScore: 88, bestRole: "UI/UX Designer", readiness: "Placement Ready" },
   { id: 5, name: "Karthik Iyer", resumeScore: 62, bestRole: "Data Analyst", readiness: "Intermediate" },
-  { id: 6, name: "Sneha Reddy", resumeScore: 71, bestRole: "Frontend Developer", readiness: "Intermediate" },
+  { id: 6, name: "Sneha Reddy", resumeScore: 71, bestRole: "MERN Stack Developer", readiness: "Intermediate" },
   { id: 7, name: "Vikram Singh", resumeScore: 35, bestRole: "QA Engineer", readiness: "Beginner" },
   { id: 8, name: "Meera Nair", resumeScore: 85, bestRole: "DevOps Engineer", readiness: "Placement Ready" },
   { id: 9, name: "Rahul Gupta", resumeScore: 58, bestRole: "Mobile Developer", readiness: "Intermediate" },

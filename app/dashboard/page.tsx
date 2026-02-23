@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { CircularProgress } from "@/components/circular-progress"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { FileText, Wallet, BarChart3, Check, Crown, Flame, CalendarDays, Sparkles } from "lucide-react"
+import { FileText, Wallet, BarChart3, Check, Crown, Flame, CalendarDays, Sparkles, TrendingUp, ArrowUpRight, Trophy, Target } from "lucide-react"
 import { Progress } from "@/components/ui/progress"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
@@ -105,6 +105,65 @@ export default function DashboardPage() {
               <Sparkles className="size-3" />
               Get {plans[activePlan].name} Plan
             </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Quick Progress Strip */}
+      <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5 rounded-xl border border-border bg-card px-4 py-2.5 shadow-sm">
+          <div className="flex items-center justify-center size-8 rounded-lg bg-success/10">
+            <TrendingUp className="size-4 text-success" />
+          </div>
+          <div className="flex flex-col">
+            <span className="text-xs text-muted-foreground leading-none">This Week</span>
+            <div className="flex items-center gap-1 mt-0.5">
+              <span className="text-sm font-bold text-foreground">+250</span>
+              <ArrowUpRight className="size-3 text-success" />
+              <span className="text-[11px] text-success font-medium">XP earned</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2.5 rounded-xl border border-border bg-card px-4 py-2.5 shadow-sm">
+          <div className="flex items-center justify-center size-8 rounded-lg bg-primary/10">
+            <Trophy className="size-4 text-primary" />
+          </div>
+          <div className="flex flex-col">
+            <span className="text-xs text-muted-foreground leading-none">Campus Rank</span>
+            <div className="flex items-center gap-1 mt-0.5">
+              <span className="text-sm font-bold text-foreground">#12</span>
+              <ArrowUpRight className="size-3 text-success" />
+              <span className="text-[11px] text-success font-medium">up 3 spots</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2.5 rounded-xl border border-border bg-card px-4 py-2.5 shadow-sm">
+          <div className="flex items-center justify-center size-8 rounded-lg bg-warning/10">
+            <Target className="size-4 text-warning-foreground" />
+          </div>
+          <div className="flex flex-col">
+            <span className="text-xs text-muted-foreground leading-none">Weekly Goal</span>
+            <div className="flex items-center gap-2 mt-0.5">
+              <span className="text-sm font-bold text-foreground">4 / 5</span>
+              <div className="w-16 h-1.5 rounded-full bg-muted overflow-hidden">
+                <div className="h-full w-[80%] rounded-full bg-primary" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2.5 rounded-xl border border-border bg-card px-4 py-2.5 shadow-sm">
+          <div className="flex items-center justify-center size-8 rounded-lg bg-primary/10">
+            <Flame className="size-4 text-primary" />
+          </div>
+          <div className="flex flex-col">
+            <span className="text-xs text-muted-foreground leading-none">Streak</span>
+            <div className="flex items-center gap-1 mt-0.5">
+              <span className="text-sm font-bold text-foreground">7 days</span>
+              <span className="text-[11px] text-muted-foreground">best: 14</span>
+            </div>
           </div>
         </div>
       </div>

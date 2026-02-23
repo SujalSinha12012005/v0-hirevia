@@ -109,52 +109,6 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Progress Summary */}
-      <div className="rounded-xl border border-border bg-card px-6 py-4 shadow-sm">
-        <div className="flex items-center justify-between">
-          {/* Rank */}
-          <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center size-10 rounded-full bg-primary/10">
-              <Trophy className="size-5 text-primary" />
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground">Your Rank</p>
-              <p className="text-lg font-bold text-foreground leading-tight">#12 <span className="text-xs font-medium text-success">+3</span></p>
-            </div>
-          </div>
-
-          <div className="h-8 w-px bg-border" />
-
-          {/* Progress bar */}
-          <div className="flex-1 max-w-md px-6">
-            <div className="flex items-center justify-between mb-1.5">
-              <p className="text-xs text-muted-foreground">Overall Progress</p>
-              <p className="text-xs font-semibold text-foreground">72%</p>
-            </div>
-            <div className="w-full h-2 rounded-full bg-muted overflow-hidden">
-              <div className="h-full w-[72%] rounded-full bg-primary transition-all duration-500" />
-            </div>
-            <div className="flex items-center justify-between mt-1">
-              <span className="text-[10px] text-muted-foreground">Beginner</span>
-              <span className="text-[10px] text-muted-foreground">Placement Ready</span>
-            </div>
-          </div>
-
-          <div className="h-8 w-px bg-border" />
-
-          {/* XP */}
-          <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center size-10 rounded-full bg-success/10">
-              <TrendingUp className="size-5 text-success" />
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground">This Week</p>
-              <p className="text-lg font-bold text-foreground leading-tight">+250 <span className="text-xs font-medium text-success">XP</span></p>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Three Core Metrics */}
       <div className="grid gap-6 md:grid-cols-3">
         {/* Resume Score */}
@@ -357,23 +311,60 @@ function ActivityCalendar() {
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 bg-muted/60 rounded-lg px-3 py-2">
-              <Flame className="size-4 text-primary" />
-              <span className="text-sm font-bold text-foreground">{streak}</span>
-              <span className="text-xs text-muted-foreground">day streak</span>
-            </div>
-            <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-              <span>Less</span>
-              {levelColors.map((c, i) => (
-                <div key={i} className={`size-3 rounded-sm ${c}`} />
-              ))}
-              <span>More</span>
-            </div>
+          <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+            <span>Less</span>
+            {levelColors.map((c, i) => (
+              <div key={i} className={`size-3 rounded-sm ${c}`} />
+            ))}
+            <span>More</span>
           </div>
         </div>
       </CardHeader>
-      <CardContent className="pb-5">
+      <CardContent className="pb-5 flex flex-col gap-5">
+        {/* Stats row */}
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5 rounded-lg bg-muted/50 px-3.5 py-2">
+            <Trophy className="size-4 text-primary" />
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-sm font-bold text-foreground">#12</span>
+              <span className="text-[11px] text-muted-foreground">Campus Rank</span>
+            </div>
+            <span className="text-[11px] font-medium text-success ml-1">+3</span>
+          </div>
+
+          <div className="h-5 w-px bg-border" />
+
+          <div className="flex items-center gap-2.5 rounded-lg bg-muted/50 px-3.5 py-2">
+            <Flame className="size-4 text-primary" />
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-sm font-bold text-foreground">{streak} days</span>
+              <span className="text-[11px] text-muted-foreground">Streak</span>
+            </div>
+          </div>
+
+          <div className="h-5 w-px bg-border" />
+
+          <div className="flex items-center gap-2.5 rounded-lg bg-muted/50 px-3.5 py-2">
+            <TrendingUp className="size-4 text-success" />
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-sm font-bold text-foreground">+250 XP</span>
+              <span className="text-[11px] text-muted-foreground">This Week</span>
+            </div>
+          </div>
+
+          <div className="h-5 w-px bg-border" />
+
+          <div className="flex-1 max-w-[180px]">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-[11px] text-muted-foreground">Progress</span>
+              <span className="text-[11px] font-semibold text-foreground">72%</span>
+            </div>
+            <div className="w-full h-1.5 rounded-full bg-muted overflow-hidden">
+              <div className="h-full w-[72%] rounded-full bg-primary" />
+            </div>
+          </div>
+        </div>
+
         <TooltipProvider delayDuration={100}>
           <div className="overflow-x-auto">
             {/* Month labels */}

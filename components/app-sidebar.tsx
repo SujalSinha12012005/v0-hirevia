@@ -13,6 +13,8 @@ import {
   Wallet,
   ShieldCheck,
   Sparkles,
+  GraduationCap,
+  Mic,
 } from "lucide-react"
 
 const navItems = [
@@ -22,6 +24,8 @@ const navItems = [
   { label: "Skill Roadmap", href: "/dashboard/roadmap", icon: Map },
   { label: "Quizzes", href: "/dashboard/quizzes", icon: Brain },
   { label: "Placement Readiness", href: "/dashboard/readiness", icon: BarChart3 },
+  { label: "Career Counselling", href: "/dashboard/counselling", icon: GraduationCap },
+  { label: "Interview Prep", href: "/dashboard/interview", icon: Mic },
   { label: "Credits Wallet", href: "/dashboard/credits", icon: Wallet },
   { label: "Admin Panel", href: "/dashboard/admin", icon: ShieldCheck },
 ]

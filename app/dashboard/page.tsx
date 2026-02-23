@@ -181,11 +181,10 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      {/* Activity Calendar */}
-      <ActivityCalendar />
+      {/* Activity Calendar + Avg Time Side by Side */}
+      <div className="grid gap-6 md:grid-cols-[1fr_280px]">
+        <ActivityCalendar />
 
-      {/* Bottom Grid: Time Spent + Trending Quizzes + Tip */}
-      <div className="grid gap-6 md:grid-cols-3">
         {/* Avg Time Spent */}
         <Card>
           <CardHeader className="flex flex-row items-center gap-3 pb-3">
@@ -225,7 +224,10 @@ export default function DashboardPage() {
             </div>
           </CardContent>
         </Card>
+      </div>
 
+      {/* Bottom Grid: Trending Quizzes + Tips */}
+      <div className="grid gap-6 md:grid-cols-2">
         {/* Trending Quizzes */}
         <Card>
           <CardHeader className="flex flex-row items-center gap-3 pb-3">

@@ -1,10 +1,11 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
+import { Input } from "@/components/ui/input"
 import {
   Upload,
   FileText,
@@ -13,6 +14,10 @@ import {
   CheckCircle2,
   Lightbulb,
   Coins,
+  MessageSquare,
+  Send,
+  Bot,
+  User,
 } from "lucide-react"
 
 const mockAnalysis = {
@@ -229,6 +234,9 @@ export default function ResumeAnalysisPage() {
               <ScoreRow label="Completeness" value={75} />
             </CardContent>
           </Card>
+
+          {/* Resume Chatbot */}
+          <ResumeChat />
         </div>
       )}
     </div>
@@ -244,5 +252,178 @@ function ScoreRow({ label, value }: { label: string; value: number }) {
       </div>
       <Progress value={value} className="h-2" />
     </div>
+  )
+}
+
+type Message = { role: "bot" | "user"; text: string }
+
+const suggestedQuestions = [
+  "How can I improve my resume score?",
+  "What projects should I add?",
+  "Is my resume ATS-friendly?",
+  "How do I highlight MERN skills?",
+]
+
+const botResponses: Record<string, string> = {
+  "how can i improve my resume score?":
+    "Focus on three areas: 1) Add quantifiable achievements to each project (e.g., 'Reduced API response time by 40%'). 2) Include keywords from job descriptions like TypeScript, REST APIs, and CI/CD. 3) Add a concise professional summary at the top highlighting your MERN stack expertise.",
+  "what projects should i add?":
+    "For a MERN Stack Developer role, include: 1) A full-stack CRUD app with authentication (shows end-to-end ability). 2) A real-time feature using Socket.io or WebSockets. 3) A project deployed on AWS/Vercel with CI/CD pipeline. Make sure each project lists the tech stack and your specific contributions.",
+  "is my resume ats-friendly?":
+    "Your formatting score is 90%, which is good. However, your keyword optimization is at 65%. To improve ATS compatibility: use standard section headings (Experience, Education, Skills), avoid tables or columns, spell out acronyms at least once, and mirror exact phrases from the job description.",
+  "how do i highlight mern skills?":
+    "Create a dedicated 'Technical Skills' section with clear categories: Frontend (React, Redux, HTML/CSS, Tailwind), Backend (Node.js, Express.js), Database (MongoDB, Mongoose), and Tools (Git, Docker, Postman). In your project descriptions, specifically mention how you used each part of the MERN stack.",
+}
+
+function getResponse(input: string): string {
+  const key = input.toLowerCase().trim()
+  for (const [q, a] of Object.entries(botResponses)) {
+    if (key.includes(q.split(" ").slice(0, 3).join(" ")) || q.includes(key.split(" ").slice(0, 3).join(" "))) {
+      return a
+    }
+  }
+  return "That's a great question! Based on your resume analysis, I'd suggest focusing on the missing skills flagged above -- TypeScript patterns, testing, and system design basics. Adding these to your resume with relevant project examples would significantly boost your score. Want me to elaborate on any of these?"
+}
+
+function ResumeChat() {
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      role: "bot",
+      text: "Hi! I've reviewed your resume. Your score is 78/100 -- solid foundation but room to grow. Ask me anything about improving your CV, what skills to highlight, or how to tailor it for MERN roles.",
+    },
+  ])
+  const [input, setInput] = useState("")
+  const [isTyping, setIsTyping] = useState(false)
+  const scrollRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight
+    }
+  }, [messages, isTyping])
+
+  function handleSend() {
+    const text = input.trim()
+    if (!text) return
+    setMessages((prev) => [...prev, { role: "user", text }])
+    setInput("")
+    setIsTyping(true)
+    setTimeout(() => {
+      setIsTyping(false)
+      setMessages((prev) => [...prev, { role: "bot", text: getResponse(text) }])
+    }, 1000 + Math.random() * 800)
+  }
+
+  function handleSuggestion(q: string) {
+    setMessages((prev) => [...prev, { role: "user", text: q }])
+    setIsTyping(true)
+    setTimeout(() => {
+      setIsTyping(false)
+      setMessages((prev) => [...prev, { role: "bot", text: getResponse(q) }])
+    }, 1000 + Math.random() * 800)
+  }
+
+  return (
+    <Card>
+      <CardHeader className="pb-3">
+        <div className="flex items-center gap-3">
+          <div className="flex items-center justify-center size-10 rounded-lg bg-primary/10">
+            <MessageSquare className="size-5 text-primary" />
+          </div>
+          <div>
+            <CardTitle className="text-base">Resume Assistant</CardTitle>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Ask questions about your CV and get instant feedback
+            </p>
+          </div>
+          <div className="ml-auto flex items-center gap-1.5">
+            <span className="size-2 rounded-full bg-success animate-pulse" />
+            <span className="text-[11px] text-muted-foreground">Online</span>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-3">
+        {/* Messages */}
+        <div
+          ref={scrollRef}
+          className="flex flex-col gap-3 max-h-[360px] overflow-y-auto rounded-xl bg-muted/30 border border-border p-4"
+        >
+          {messages.map((msg, i) => (
+            <div
+              key={i}
+              className={`flex gap-2.5 ${msg.role === "user" ? "flex-row-reverse" : ""}`}
+            >
+              <div
+                className={`flex items-center justify-center size-7 rounded-full shrink-0 mt-0.5 ${
+                  msg.role === "bot"
+                    ? "bg-primary/10"
+                    : "bg-foreground/10"
+                }`}
+              >
+                {msg.role === "bot" ? (
+                  <Bot className="size-3.5 text-primary" />
+                ) : (
+                  <User className="size-3.5 text-foreground" />
+                )}
+              </div>
+              <div
+                className={`rounded-2xl px-4 py-2.5 max-w-[80%] ${
+                  msg.role === "bot"
+                    ? "bg-card border border-border"
+                    : "bg-primary text-primary-foreground"
+                }`}
+              >
+                <p className={`text-sm leading-relaxed ${msg.role === "bot" ? "text-foreground" : ""}`}>
+                  {msg.text}
+                </p>
+              </div>
+            </div>
+          ))}
+
+          {isTyping && (
+            <div className="flex gap-2.5">
+              <div className="flex items-center justify-center size-7 rounded-full shrink-0 bg-primary/10">
+                <Bot className="size-3.5 text-primary" />
+              </div>
+              <div className="rounded-2xl px-4 py-3 bg-card border border-border">
+                <div className="flex gap-1">
+                  <span className="size-1.5 rounded-full bg-muted-foreground/50 animate-bounce" style={{ animationDelay: "0ms" }} />
+                  <span className="size-1.5 rounded-full bg-muted-foreground/50 animate-bounce" style={{ animationDelay: "150ms" }} />
+                  <span className="size-1.5 rounded-full bg-muted-foreground/50 animate-bounce" style={{ animationDelay: "300ms" }} />
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Suggested Questions */}
+        <div className="flex flex-wrap gap-2">
+          {suggestedQuestions.map((q) => (
+            <button
+              key={q}
+              onClick={() => handleSuggestion(q)}
+              className="rounded-full border border-border bg-card px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted/50 hover:text-foreground hover:border-primary/30 transition-colors"
+            >
+              {q}
+            </button>
+          ))}
+        </div>
+
+        {/* Input */}
+        <div className="flex gap-2">
+          <Input
+            placeholder="Ask about your resume..."
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSend()}
+            className="flex-1"
+          />
+          <Button size="icon" onClick={handleSend} disabled={!input.trim()}>
+            <Send className="size-4" />
+            <span className="sr-only">Send message</span>
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
   )
 }

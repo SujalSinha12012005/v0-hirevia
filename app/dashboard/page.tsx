@@ -18,7 +18,7 @@ export default function DashboardPage() {
           Welcome back, Arjun
         </h1>
         <p className="text-muted-foreground mt-1">
-          {"Your placement snapshot at a glance."}
+          {"Here's how you're tracking today."}
         </p>
       </div>
 

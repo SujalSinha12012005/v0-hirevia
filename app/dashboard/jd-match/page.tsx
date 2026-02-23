@@ -11,7 +11,46 @@ import {
   CheckCircle2,
   XCircle,
   Lightbulb,
+  Shield,
+  Brain,
+  Database,
+  Code2,
+  Cloud,
+  BarChart3,
 } from "lucide-react"
+
+const suggestedRoles = [
+  {
+    title: "Cyber Security Analyst",
+    icon: Shield,
+    jd: "We are looking for a Cyber Security Analyst to monitor, detect, and respond to security threats. Responsibilities include vulnerability assessments, penetration testing, SIEM monitoring, incident response, and ensuring compliance with security standards. Required skills: network security, firewalls, IDS/IPS, OWASP, Python scripting, ISO 27001, NIST framework, risk assessment, and security auditing.",
+  },
+  {
+    title: "AI/ML Engineer",
+    icon: Brain,
+    jd: "Seeking an AI/ML Engineer to design and deploy machine learning models for production systems. You will work on data pipelines, model training, and optimization. Required skills: Python, TensorFlow, PyTorch, scikit-learn, NLP, computer vision, MLOps, Docker, AWS SageMaker, data preprocessing, and experience with large-scale datasets.",
+  },
+  {
+    title: "MERN Stack Developer",
+    icon: Code2,
+    jd: "Hiring a MERN Stack Developer to build and maintain full-stack web applications. You will develop RESTful APIs, design responsive UIs, and manage databases. Required skills: MongoDB, Express.js, React.js, Node.js, TypeScript, Redux, REST APIs, Git, Agile methodology, JWT authentication, and deployment on AWS or Vercel.",
+  },
+  {
+    title: "Data Analyst",
+    icon: BarChart3,
+    jd: "Looking for a Data Analyst to interpret complex datasets and deliver actionable business insights. Responsibilities include data cleaning, visualization, reporting, and building dashboards. Required skills: SQL, Python, Excel, Tableau, Power BI, statistics, data modeling, ETL processes, and experience with A/B testing.",
+  },
+  {
+    title: "Cloud Engineer",
+    icon: Cloud,
+    jd: "We need a Cloud Engineer to architect, deploy, and manage scalable cloud infrastructure. You will work on CI/CD pipelines, containerization, and cloud-native services. Required skills: AWS, Azure, GCP, Terraform, Docker, Kubernetes, Linux, networking, serverless architecture, monitoring tools, and infrastructure-as-code.",
+  },
+  {
+    title: "Database Administrator",
+    icon: Database,
+    jd: "Hiring a Database Administrator to manage, optimize, and secure our database systems. Duties include performance tuning, backup/recovery, migration, and query optimization. Required skills: MySQL, PostgreSQL, MongoDB, Redis, database indexing, replication, sharding, stored procedures, SQL proficiency, and cloud database management.",
+  },
+]
 
 const mockMatch = {
   matchPercentage: 73,
@@ -76,6 +115,48 @@ export default function JDMatchPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
+          {/* Suggested Roles */}
+          <div>
+            <p className="text-xs font-medium text-muted-foreground mb-2.5">Quick select a role</p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {suggestedRoles.map((role) => {
+                const Icon = role.icon
+                const isSelected = jobDescription === role.jd
+                return (
+                  <button
+                    key={role.title}
+                    onClick={() => {
+                      setJobDescription(role.jd)
+                      setShowResults(false)
+                    }}
+                    className={`flex items-center gap-2.5 rounded-xl border px-3 py-2.5 text-left transition-all ${
+                      isSelected
+                        ? "border-primary bg-primary/[0.06] shadow-sm"
+                        : "border-border bg-card hover:border-primary/30 hover:bg-muted/40"
+                    }`}
+                  >
+                    <div className={`flex items-center justify-center size-8 rounded-lg shrink-0 ${
+                      isSelected ? "bg-primary/15" : "bg-muted"
+                    }`}>
+                      <Icon className={`size-4 ${isSelected ? "text-primary" : "text-muted-foreground"}`} />
+                    </div>
+                    <span className={`text-xs font-medium leading-tight ${
+                      isSelected ? "text-primary" : "text-foreground"
+                    }`}>
+                      {role.title}
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div className="flex-1 h-px bg-border" />
+            <span className="text-[11px] text-muted-foreground">or paste your own</span>
+            <div className="flex-1 h-px bg-border" />
+          </div>
+
           <textarea
             value={jobDescription}
             onChange={(e) => {

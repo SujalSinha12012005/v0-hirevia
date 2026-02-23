@@ -13,16 +13,16 @@ export default function DashboardPage() {
   const readinessIndex = 72
 
   const plans = [
-    { name: "1 Month", price: 100, per: "month", features: ["Resume Analysis", "10 JD Matches", "Basic Quizzes"] },
-    { name: "4 Months", price: 350, per: "4 months", popular: true, features: ["Unlimited Analyses", "50 JD Matches", "All Quizzes", "Skill Roadmap"] },
-    { name: "1 Year", price: 820, per: "year", features: ["Everything in 4 Months", "Priority Support", "Admin Insights", "Placement Coaching"] },
+    { name: "1 Month", price: 100, per: "/mo", save: null, features: ["Resume Analysis", "10 JD Matches", "Basic Quizzes"] },
+    { name: "4 Months", price: 350, per: "/4mo", save: "Save 12%", popular: true, features: ["Unlimited Analyses", "50 JD Matches", "All Quizzes", "Skill Roadmap"] },
+    { name: "1 Year", price: 820, per: "/yr", save: "Save 32%", features: ["Everything in 4 Months", "Priority Support", "Admin Insights", "Placement Coaching"] },
   ]
 
   return (
     <div className="flex flex-col gap-8">
       {/* Header + Subscription */}
-      <div className="flex items-start justify-between gap-6">
-        <div>
+      <div className="flex items-start justify-between gap-8">
+        <div className="pt-1">
           <h1 className="text-2xl font-bold tracking-tight text-foreground">
             Welcome back, Arjun
           </h1>
@@ -32,48 +32,67 @@ export default function DashboardPage() {
         </div>
 
         {/* Subscription Plans - top right */}
-        <Card className="shrink-0 w-auto">
-          <CardContent className="flex gap-3 p-3">
-            {plans.map((plan) => (
-              <div
-                key={plan.name}
-                className={`relative flex flex-col items-center gap-2 rounded-xl border px-5 py-4 transition-colors ${
+        <div className="shrink-0 flex gap-3">
+          {plans.map((plan) => (
+            <div
+              key={plan.name}
+              className={`group relative flex flex-col rounded-2xl border-2 p-5 w-[180px] transition-all duration-200 hover:-translate-y-1 hover:shadow-lg ${
+                plan.popular
+                  ? "border-primary bg-primary/[0.04] shadow-md shadow-primary/10"
+                  : "border-border bg-card hover:border-primary/30"
+              }`}
+            >
+              {plan.popular && (
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                  <Badge className="bg-primary text-primary-foreground text-[10px] font-semibold px-3 py-0.5 shadow-sm shadow-primary/20">
+                    <Crown className="size-3 mr-1" />
+                    Popular
+                  </Badge>
+                </div>
+              )}
+
+              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                {plan.name}
+              </span>
+
+              <div className="flex items-baseline gap-1 mt-3">
+                <span className="text-2xl font-bold text-foreground">
+                  {"₹"}{plan.price}
+                </span>
+                <span className="text-xs text-muted-foreground">{plan.per}</span>
+              </div>
+
+              {plan.save && (
+                <span className="inline-block mt-1.5 text-[11px] font-medium text-primary bg-primary/10 rounded-full px-2 py-0.5 w-fit">
+                  {plan.save}
+                </span>
+              )}
+
+              <div className="my-4 h-px bg-border" />
+
+              <ul className="flex flex-col gap-2">
+                {plan.features.map((f) => (
+                  <li key={f} className="flex items-start gap-2 text-[12px] text-muted-foreground leading-tight">
+                    <Check className="size-3.5 text-primary shrink-0 mt-0.5" />
+                    {f}
+                  </li>
+                ))}
+              </ul>
+
+              <Button
+                size="sm"
+                variant={plan.popular ? "default" : "outline"}
+                className={`mt-auto pt-4 h-8 text-xs font-medium w-full rounded-lg ${
                   plan.popular
-                    ? "border-primary bg-primary/5"
-                    : "border-border bg-card hover:border-primary/40"
+                    ? "shadow-sm shadow-primary/20"
+                    : "hover:bg-primary hover:text-primary-foreground"
                 }`}
               >
-                {plan.popular && (
-                  <Badge className="absolute -top-2.5 bg-primary text-primary-foreground text-[10px] px-2 py-0.5">
-                    Best Value
-                  </Badge>
-                )}
-                <span className="text-xs font-medium text-muted-foreground">{plan.name}</span>
-                <div className="flex items-baseline gap-0.5">
-                  <span className="text-lg font-bold text-foreground">
-                    {"₹"}{plan.price}
-                  </span>
-                </div>
-                <ul className="flex flex-col gap-1 mt-1">
-                  {plan.features.map((f) => (
-                    <li key={f} className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-                      <Check className="size-3 text-primary shrink-0" />
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-                <Button
-                  size="sm"
-                  variant={plan.popular ? "default" : "outline"}
-                  className="mt-2 h-7 text-xs w-full"
-                >
-                  {plan.popular && <Crown className="size-3 mr-1" />}
-                  Subscribe
-                </Button>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
+                Get Started
+              </Button>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Three Core Metrics */}

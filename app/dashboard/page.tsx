@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { CircularProgress } from "@/components/circular-progress"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { FileText, Wallet, BarChart3, Check, Crown, Flame, CalendarDays, Sparkles, Trophy } from "lucide-react"
+import { FileText, Wallet, BarChart3, Check, Crown, Flame, CalendarDays, Sparkles, Trophy, Clock, Zap, BookOpen, Lightbulb } from "lucide-react"
 import { Progress } from "@/components/ui/progress"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
@@ -183,6 +183,138 @@ export default function DashboardPage() {
 
       {/* Activity Calendar */}
       <ActivityCalendar />
+
+      {/* Bottom Grid: Time Spent + Trending Quizzes + Tip */}
+      <div className="grid gap-6 md:grid-cols-3">
+        {/* Avg Time Spent */}
+        <Card>
+          <CardHeader className="flex flex-row items-center gap-3 pb-3">
+            <div className="flex items-center justify-center size-9 rounded-lg bg-primary/10">
+              <Clock className="size-4 text-primary" />
+            </div>
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Avg. Time This Week
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-4">
+            <div className="flex items-baseline gap-2">
+              <span className="text-3xl font-bold text-foreground">1h 42m</span>
+              <span className="text-xs font-medium text-success">+18%</span>
+            </div>
+            <div className="flex flex-col gap-2">
+              {[
+                { day: "Mon", mins: 95 },
+                { day: "Tue", mins: 120 },
+                { day: "Wed", mins: 80 },
+                { day: "Thu", mins: 110 },
+                { day: "Fri", mins: 140 },
+                { day: "Sat", mins: 60 },
+                { day: "Sun", mins: 30 },
+              ].map((d) => (
+                <div key={d.day} className="flex items-center gap-2">
+                  <span className="text-[11px] text-muted-foreground w-7">{d.day}</span>
+                  <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
+                    <div
+                      className="h-full rounded-full bg-primary/70 transition-all"
+                      style={{ width: `${(d.mins / 140) * 100}%` }}
+                    />
+                  </div>
+                  <span className="text-[11px] text-muted-foreground w-9 text-right">{d.mins}m</span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Trending Quizzes */}
+        <Card>
+          <CardHeader className="flex flex-row items-center gap-3 pb-3">
+            <div className="flex items-center justify-center size-9 rounded-lg bg-primary/10">
+              <Zap className="size-4 text-primary" />
+            </div>
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Trending Quizzes
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-2.5">
+            {[
+              { title: "DSA Fundamentals", players: 342, tag: "Hot" },
+              { title: "SQL Mastery", players: 218, tag: "New" },
+              { title: "Aptitude Round Prep", players: 189, tag: null },
+              { title: "System Design Basics", players: 156, tag: "Popular" },
+              { title: "Behavioural Interview", players: 134, tag: null },
+            ].map((quiz, i) => (
+              <div
+                key={quiz.title}
+                className="flex items-center gap-3 rounded-lg px-3 py-2.5 hover:bg-muted/50 transition-colors cursor-pointer group"
+              >
+                <span className="text-xs font-bold text-muted-foreground w-5">{i + 1}</span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-foreground truncate group-hover:text-primary transition-colors">
+                    {quiz.title}
+                  </p>
+                  <p className="text-[11px] text-muted-foreground">{quiz.players} people attempted</p>
+                </div>
+                {quiz.tag && (
+                  <Badge
+                    variant="secondary"
+                    className={`text-[10px] px-1.5 py-0 border-0 shrink-0 ${
+                      quiz.tag === "Hot"
+                        ? "bg-destructive/10 text-destructive"
+                        : quiz.tag === "New"
+                          ? "bg-success/10 text-success"
+                          : "bg-primary/10 text-primary"
+                    }`}
+                  >
+                    {quiz.tag}
+                  </Badge>
+                )}
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+
+        {/* Quick Notes / Tips */}
+        <Card>
+          <CardHeader className="flex flex-row items-center gap-3 pb-3">
+            <div className="flex items-center justify-center size-9 rounded-lg bg-primary/10">
+              <Lightbulb className="size-4 text-primary" />
+            </div>
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Quick Notes
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-3">
+            <div className="rounded-lg bg-primary/[0.04] border border-primary/15 p-3">
+              <div className="flex items-center gap-2 mb-1.5">
+                <BookOpen className="size-3.5 text-primary" />
+                <span className="text-xs font-semibold text-foreground">Tip of the Day</span>
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Practice at least 2 coding questions daily. Consistency beats intensity when it comes to placement prep.
+              </p>
+            </div>
+            <div className="rounded-lg bg-muted/50 border border-border p-3">
+              <div className="flex items-center gap-2 mb-1.5">
+                <Zap className="size-3.5 text-primary" />
+                <span className="text-xs font-semibold text-foreground">Reminder</span>
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Your resume has 3 areas for improvement. Update your skills section for a higher match score.
+              </p>
+            </div>
+            <div className="rounded-lg bg-muted/50 border border-border p-3">
+              <div className="flex items-center gap-2 mb-1.5">
+                <Trophy className="size-3.5 text-primary" />
+                <span className="text-xs font-semibold text-foreground">Achievement</span>
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                You completed 5 quizzes this week. Keep going to unlock the "Quiz Master" badge!
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   )
 }

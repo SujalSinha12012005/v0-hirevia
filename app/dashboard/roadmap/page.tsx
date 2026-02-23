@@ -177,26 +177,30 @@ export default function RoadmapPage() {
         </CardContent>
       </Card>
 
-      {/* Skills Showcase */}
-      <div className="grid gap-6 md:grid-cols-3">
-        {/* Recently Completed */}
-        <Card>
-          <CardHeader className="pb-3">
-            <div className="flex items-center gap-2.5">
-              <div className="flex items-center justify-center size-9 rounded-lg bg-success/10">
-                <Award className="size-4 text-success" />
+      {/* Recently Completed */}
+      <Card>
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center justify-center size-10 rounded-lg bg-success/10">
+                <Award className="size-5 text-success" />
               </div>
               <div>
-                <CardTitle className="text-sm font-medium">Recently Completed</CardTitle>
-                <p className="text-[11px] text-muted-foreground">{recentlyCompleted.length} skills mastered</p>
+                <CardTitle className="text-base font-semibold">Recently Completed</CardTitle>
+                <p className="text-xs text-muted-foreground mt-0.5">{recentlyCompleted.length} skills mastered this month</p>
               </div>
             </div>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-1.5">
+            <Badge variant="secondary" className="bg-success/10 text-success border-0 text-xs">
+              +{recentlyCompleted.reduce((sum, s) => sum + s.xp, 0)} XP total
+            </Badge>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
             {recentlyCompleted.map((item) => (
               <div
                 key={item.skill}
-                className="flex items-center gap-3 rounded-lg px-3 py-2 bg-success/[0.04] border border-success/10"
+                className="flex items-center gap-3 rounded-xl px-4 py-3 bg-success/[0.04] border border-success/10"
               >
                 <CheckCircle2 className="size-4 text-success shrink-0" />
                 <div className="flex-1 min-w-0">
@@ -208,36 +212,49 @@ export default function RoadmapPage() {
                 </Badge>
               </div>
             ))}
-          </CardContent>
-        </Card>
+          </div>
+        </CardContent>
+      </Card>
 
-        {/* Remaining Skills */}
-        <Card>
-          <CardHeader className="pb-3">
-            <div className="flex items-center gap-2.5">
-              <div className="flex items-center justify-center size-9 rounded-lg bg-primary/10">
-                <ArrowRight className="size-4 text-primary" />
+      {/* Left to Complete */}
+      <Card>
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center justify-center size-10 rounded-lg bg-primary/10">
+                <ArrowRight className="size-5 text-primary" />
               </div>
               <div>
-                <CardTitle className="text-sm font-medium">Left to Complete</CardTitle>
-                <p className="text-[11px] text-muted-foreground">{remainingSkills.length} skills remaining</p>
+                <CardTitle className="text-base font-semibold">Left to Complete</CardTitle>
+                <p className="text-xs text-muted-foreground mt-0.5">{remainingSkills.length} skills remaining in your roadmap</p>
               </div>
             </div>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-1.5">
-            {remainingSkills.slice(0, 5).map((item) => (
+            <span className="text-sm font-semibold text-foreground">
+              {Math.round((recentlyCompleted.length / (recentlyCompleted.length + remainingSkills.length)) * 100)}% done
+            </span>
+          </div>
+          <div className="mt-3">
+            <Progress
+              value={Math.round((recentlyCompleted.length / (recentlyCompleted.length + remainingSkills.length)) * 100)}
+              className="h-2"
+            />
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-2 sm:grid-cols-2">
+            {remainingSkills.map((item) => (
               <div
                 key={item.skill}
-                className="flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-muted/40 transition-colors"
+                className="flex items-center gap-3 rounded-xl border border-border px-4 py-3 hover:bg-muted/40 transition-colors"
               >
-                <Circle className="size-4 text-muted-foreground/50 shrink-0" />
+                <Circle className="size-4 text-muted-foreground/40 shrink-0" />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-foreground truncate">{item.skill}</p>
                   <p className="text-[11px] text-muted-foreground">Week {item.week}</p>
                 </div>
                 <Badge
                   variant="secondary"
-                  className={`text-[10px] px-1.5 py-0 border-0 shrink-0 ${
+                  className={`text-[10px] px-2 py-0.5 border-0 shrink-0 ${
                     item.priority === "High"
                       ? "bg-destructive/10 text-destructive"
                       : item.priority === "Medium"
@@ -249,37 +266,36 @@ export default function RoadmapPage() {
                 </Badge>
               </div>
             ))}
-            {remainingSkills.length > 5 && (
-              <p className="text-xs text-muted-foreground text-center pt-1">
-                +{remainingSkills.length - 5} more skills
-              </p>
-            )}
-          </CardContent>
-        </Card>
+          </div>
+        </CardContent>
+      </Card>
 
-        {/* Trending Skills */}
-        <Card>
-          <CardHeader className="pb-3">
-            <div className="flex items-center gap-2.5">
-              <div className="flex items-center justify-center size-9 rounded-lg bg-primary/10">
-                <TrendingUp className="size-4 text-primary" />
+      {/* Trending Skills */}
+      <Card>
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center justify-center size-10 rounded-lg bg-primary/10">
+                <TrendingUp className="size-5 text-primary" />
               </div>
               <div>
-                <CardTitle className="text-sm font-medium">Trending Skills</CardTitle>
-                <p className="text-[11px] text-muted-foreground">Popular among students</p>
+                <CardTitle className="text-base font-semibold">Trending Skills</CardTitle>
+                <p className="text-xs text-muted-foreground mt-0.5">Popular among students right now</p>
               </div>
             </div>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-1.5">
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
             {trendingSkills.map((item) => (
               <div
                 key={item.skill}
-                className="flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-muted/40 transition-colors group cursor-pointer"
+                className="flex items-center gap-3 rounded-xl border border-border px-4 py-3 hover:border-primary/30 hover:bg-muted/30 transition-all group cursor-pointer"
               >
-                <Sparkles className="size-4 text-primary/60 group-hover:text-primary shrink-0 transition-colors" />
+                <Sparkles className="size-4 text-primary/50 group-hover:text-primary shrink-0 transition-colors" />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <p className="text-sm font-medium text-foreground truncate">{item.skill}</p>
+                    <p className="text-sm font-medium text-foreground truncate group-hover:text-primary transition-colors">{item.skill}</p>
                     {item.tag && (
                       <Badge
                         variant="secondary"
@@ -309,9 +325,9 @@ export default function RoadmapPage() {
                 </Button>
               </div>
             ))}
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Weekly Breakdown */}
       <div className="flex flex-col gap-5">

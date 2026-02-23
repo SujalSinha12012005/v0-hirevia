@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { CircularProgress } from "@/components/circular-progress"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { FileText, Wallet, BarChart3, Check, Crown, Flame, CalendarDays, Sparkles, TrendingUp, Trophy } from "lucide-react"
+import { FileText, Wallet, BarChart3, Check, Crown, Flame, CalendarDays, Sparkles, Trophy } from "lucide-react"
 import { Progress } from "@/components/ui/progress"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
@@ -339,16 +339,6 @@ function ActivityCalendar() {
             <div className="flex items-baseline gap-1.5">
               <span className="text-sm font-bold text-foreground">{streak} days</span>
               <span className="text-[11px] text-muted-foreground">Streak</span>
-            </div>
-          </div>
-
-          <div className="h-5 w-px bg-border" />
-
-          <div className="flex items-center gap-2.5 rounded-lg bg-muted/50 px-3.5 py-2">
-            <TrendingUp className="size-4 text-success" />
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-sm font-bold text-foreground">+250 XP</span>
-              <span className="text-[11px] text-muted-foreground">This Week</span>
             </div>
           </div>
 

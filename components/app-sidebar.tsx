@@ -101,38 +101,39 @@ export function AppSidebar() {
           </ul>
         </div>
 
-        {/* Premium Section - below Credits Wallet */}
-        <div className="mt-4 pt-4 border-t border-sidebar-border">
-          <span className="flex items-center gap-1.5 px-3 mb-2 text-[10px] font-semibold uppercase tracking-widest text-sidebar-foreground/40">
-            <Lock className="size-3" />
-            Premium
-          </span>
-          <ul className="flex flex-col gap-1">
-            {premiumNav.map((item) => {
-              const isActive = pathname.startsWith(item.href)
-              return (
-                <li key={item.href}>
-                  <Link
-                    href={item.href}
-                    className={cn(
-                      "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
-                      isActive
-                        ? "bg-sidebar-accent text-sidebar-primary-foreground"
-                        : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
-                    )}
-                  >
-                    <item.icon className="size-[18px] shrink-0" />
-                    {item.label}
-                    <span className="ml-auto text-[9px] font-semibold bg-sidebar-primary/20 text-sidebar-primary rounded-full px-2 py-0.5">
-                      150 Cr
-                    </span>
-                  </Link>
-                </li>
-              )
-            })}
-          </ul>
-        </div>
       </nav>
+
+      {/* Premium Section - pinned above profile, always visible */}
+      <div className="px-3 pb-2 border-t border-sidebar-border pt-3">
+        <span className="flex items-center gap-1.5 px-3 mb-2 text-[10px] font-semibold uppercase tracking-widest text-sidebar-foreground/40">
+          <Lock className="size-3" />
+          Premium
+        </span>
+        <ul className="flex flex-col gap-1">
+          {premiumNav.map((item) => {
+            const isActive = pathname.startsWith(item.href)
+            return (
+              <li key={item.href}>
+                <Link
+                  href={item.href}
+                  className={cn(
+                    "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                    isActive
+                      ? "bg-sidebar-accent text-sidebar-primary-foreground"
+                      : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                  )}
+                >
+                  <item.icon className="size-[18px] shrink-0" />
+                  {item.label}
+                  <span className="ml-auto text-[9px] font-semibold bg-sidebar-primary/20 text-sidebar-primary rounded-full px-2 py-0.5">
+                    150 Cr
+                  </span>
+                </Link>
+              </li>
+            )
+          })}
+        </ul>
+      </div>
 
       <div className="border-t border-sidebar-border px-4 py-4">
         <div className="flex items-center gap-3">

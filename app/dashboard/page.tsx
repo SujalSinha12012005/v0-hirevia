@@ -34,73 +34,77 @@ export default function DashboardPage() {
           </p>
         </div>
 
-        {/* Subscription Plan - compact with dot selector */}
-        <div className="shrink-0 flex flex-col items-center gap-3">
-          <div
-            className={`relative flex flex-col rounded-2xl border-2 px-6 py-5 w-[220px] transition-all duration-300 ${
-              plans[activePlan].popular
-                ? "border-primary bg-primary/[0.04] shadow-md shadow-primary/10"
-                : "border-border bg-card"
-            }`}
-          >
-            {plans[activePlan].popular && (
-              <Badge className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-[10px] font-semibold px-2.5 py-0.5">
-                <Crown className="size-3 mr-1" />
-                Best Value
-              </Badge>
-            )}
+        {/* Subscription Plan - pill toggle + card */}
+        <div className="shrink-0 flex flex-col items-end gap-3">
+          {/* Pill toggle for plans */}
+          <div className="flex items-center rounded-full bg-muted/70 p-1">
+            {plans.map((plan, i) => (
+              <button
+                key={plan.name}
+                onClick={() => setActivePlan(i)}
+                className={`relative rounded-full px-4 py-1.5 text-xs font-medium transition-all duration-200 ${
+                  activePlan === i
+                    ? "bg-card text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {plan.name}
+                {plan.popular && activePlan !== i && (
+                  <span className="absolute -top-1 -right-1 size-2 rounded-full bg-primary animate-pulse" />
+                )}
+              </button>
+            ))}
+          </div>
 
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-              {plans[activePlan].name}
-            </span>
+          {/* Active plan card */}
+          <div className="relative w-[260px] rounded-2xl border border-border bg-card p-5 shadow-sm">
+            {/* Top accent bar */}
+            <div className="absolute top-0 left-5 right-5 h-[2px] rounded-b-full bg-primary" />
 
-            <div className="flex items-baseline gap-1 mt-2">
-              <span className="text-3xl font-bold text-foreground">
-                {"₹"}{plans[activePlan].price}
-              </span>
-              <span className="text-xs text-muted-foreground">{plans[activePlan].per}</span>
+            <div className="flex items-start justify-between">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-semibold text-foreground">
+                    {plans[activePlan].name}
+                  </span>
+                  {plans[activePlan].popular && (
+                    <Badge variant="secondary" className="bg-primary/10 text-primary text-[10px] font-medium px-1.5 py-0 border-0">
+                      Popular
+                    </Badge>
+                  )}
+                </div>
+                {plans[activePlan].save && (
+                  <span className="text-[11px] font-medium text-primary mt-0.5 block">
+                    {plans[activePlan].save}
+                  </span>
+                )}
+              </div>
+              <div className="text-right">
+                <span className="text-2xl font-bold text-foreground">
+                  {"₹"}{plans[activePlan].price}
+                </span>
+                <span className="text-xs text-muted-foreground">{plans[activePlan].per}</span>
+              </div>
             </div>
 
-            {plans[activePlan].save && (
-              <span className="inline-block mt-1.5 text-[11px] font-medium text-primary bg-primary/10 rounded-full px-2 py-0.5 w-fit">
-                {plans[activePlan].save}
-              </span>
-            )}
-
-            <div className="my-3 h-px bg-border" />
-
-            <ul className="flex flex-col gap-1.5">
+            <div className="mt-4 grid grid-cols-2 gap-x-3 gap-y-2">
               {plans[activePlan].features.map((f) => (
-                <li key={f} className="flex items-center gap-2 text-[12px] text-muted-foreground">
-                  <Check className="size-3.5 text-primary shrink-0" />
-                  {f}
-                </li>
+                <div key={f} className="flex items-center gap-1.5">
+                  <div className="flex items-center justify-center size-4 rounded-full bg-primary/10">
+                    <Check className="size-2.5 text-primary" />
+                  </div>
+                  <span className="text-[11px] text-muted-foreground leading-tight">{f}</span>
+                </div>
               ))}
-            </ul>
+            </div>
 
             <Button
               size="sm"
-              className="mt-4 h-8 text-xs font-medium w-full rounded-lg"
+              className="mt-4 h-8 text-xs font-medium w-full rounded-lg gap-1.5"
             >
-              <Sparkles className="size-3 mr-1.5" />
-              Subscribe
+              <Sparkles className="size-3" />
+              Get {plans[activePlan].name} Plan
             </Button>
-          </div>
-
-          {/* Three dot selector */}
-          <div className="flex items-center gap-2">
-            {plans.map((_, i) => (
-              <button
-                key={i}
-                onClick={() => setActivePlan(i)}
-                className={`rounded-full transition-all duration-200 ${
-                  activePlan === i
-                    ? "size-2.5 bg-primary"
-                    : "size-2 bg-muted-foreground/30 hover:bg-muted-foreground/50"
-                }`}
-                aria-label={`View ${plans[i].name} plan`}
-              />
-            ))}
           </div>
         </div>
       </div>

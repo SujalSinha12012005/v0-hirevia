@@ -1,23 +1,25 @@
 "use client"
 
+import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { CircularProgress } from "@/components/circular-progress"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { FileText, Wallet, BarChart3, Check, Crown, Flame, CalendarDays } from "lucide-react"
+import { FileText, Wallet, BarChart3, Check, Crown, Flame, CalendarDays, Sparkles } from "lucide-react"
 import { Progress } from "@/components/ui/progress"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+
+const plans = [
+  { name: "1 Month", price: 100, per: "/mo", save: null, features: ["Resume Analysis", "10 JD Matches", "Basic Quizzes"] },
+  { name: "4 Months", price: 350, per: "/4mo", save: "Save 12%", popular: true, features: ["Unlimited Analyses", "50 JD Matches", "All Quizzes", "Skill Roadmap"] },
+  { name: "1 Year", price: 820, per: "/yr", save: "Save 32%", features: ["Everything in 4 Months", "Priority Support", "Admin Insights", "Placement Coaching"] },
+]
 
 export default function DashboardPage() {
   const resumeScore = 78
   const creditBalance = 145
   const readinessIndex = 72
-
-  const plans = [
-    { name: "1 Month", price: 100, per: "/mo", save: null, features: ["Resume Analysis", "10 JD Matches", "Basic Quizzes"] },
-    { name: "4 Months", price: 350, per: "/4mo", save: "Save 12%", popular: true, features: ["Unlimited Analyses", "50 JD Matches", "All Quizzes", "Skill Roadmap"] },
-    { name: "1 Year", price: 820, per: "/yr", save: "Save 32%", features: ["Everything in 4 Months", "Priority Support", "Admin Insights", "Placement Coaching"] },
-  ]
+  const [activePlan, setActivePlan] = useState(1)
 
   return (
     <div className="flex flex-col gap-8">
@@ -32,67 +34,74 @@ export default function DashboardPage() {
           </p>
         </div>
 
-        {/* Subscription Plans - top right */}
-        <div className="shrink-0 flex gap-3">
-          {plans.map((plan) => (
-            <div
-              key={plan.name}
-              className={`group relative flex flex-col rounded-2xl border-2 p-5 w-[180px] transition-all duration-200 hover:-translate-y-1 hover:shadow-lg ${
-                plan.popular
-                  ? "border-primary bg-primary/[0.04] shadow-md shadow-primary/10"
-                  : "border-border bg-card hover:border-primary/30"
-              }`}
-            >
-              {plan.popular && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <Badge className="bg-primary text-primary-foreground text-[10px] font-semibold px-3 py-0.5 shadow-sm shadow-primary/20">
-                    <Crown className="size-3 mr-1" />
-                    Popular
-                  </Badge>
-                </div>
-              )}
+        {/* Subscription Plan - compact with dot selector */}
+        <div className="shrink-0 flex flex-col items-center gap-3">
+          <div
+            className={`relative flex flex-col rounded-2xl border-2 px-6 py-5 w-[220px] transition-all duration-300 ${
+              plans[activePlan].popular
+                ? "border-primary bg-primary/[0.04] shadow-md shadow-primary/10"
+                : "border-border bg-card"
+            }`}
+          >
+            {plans[activePlan].popular && (
+              <Badge className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-[10px] font-semibold px-2.5 py-0.5">
+                <Crown className="size-3 mr-1" />
+                Best Value
+              </Badge>
+            )}
 
-              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                {plan.name}
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+              {plans[activePlan].name}
+            </span>
+
+            <div className="flex items-baseline gap-1 mt-2">
+              <span className="text-3xl font-bold text-foreground">
+                {"₹"}{plans[activePlan].price}
               </span>
-
-              <div className="flex items-baseline gap-1 mt-3">
-                <span className="text-2xl font-bold text-foreground">
-                  {"₹"}{plan.price}
-                </span>
-                <span className="text-xs text-muted-foreground">{plan.per}</span>
-              </div>
-
-              {plan.save && (
-                <span className="inline-block mt-1.5 text-[11px] font-medium text-primary bg-primary/10 rounded-full px-2 py-0.5 w-fit">
-                  {plan.save}
-                </span>
-              )}
-
-              <div className="my-4 h-px bg-border" />
-
-              <ul className="flex flex-col gap-2">
-                {plan.features.map((f) => (
-                  <li key={f} className="flex items-start gap-2 text-[12px] text-muted-foreground leading-tight">
-                    <Check className="size-3.5 text-primary shrink-0 mt-0.5" />
-                    {f}
-                  </li>
-                ))}
-              </ul>
-
-              <Button
-                size="sm"
-                variant={plan.popular ? "default" : "outline"}
-                className={`mt-auto pt-4 h-8 text-xs font-medium w-full rounded-lg ${
-                  plan.popular
-                    ? "shadow-sm shadow-primary/20"
-                    : "hover:bg-primary hover:text-primary-foreground"
-                }`}
-              >
-                Get Started
-              </Button>
+              <span className="text-xs text-muted-foreground">{plans[activePlan].per}</span>
             </div>
-          ))}
+
+            {plans[activePlan].save && (
+              <span className="inline-block mt-1.5 text-[11px] font-medium text-primary bg-primary/10 rounded-full px-2 py-0.5 w-fit">
+                {plans[activePlan].save}
+              </span>
+            )}
+
+            <div className="my-3 h-px bg-border" />
+
+            <ul className="flex flex-col gap-1.5">
+              {plans[activePlan].features.map((f) => (
+                <li key={f} className="flex items-center gap-2 text-[12px] text-muted-foreground">
+                  <Check className="size-3.5 text-primary shrink-0" />
+                  {f}
+                </li>
+              ))}
+            </ul>
+
+            <Button
+              size="sm"
+              className="mt-4 h-8 text-xs font-medium w-full rounded-lg"
+            >
+              <Sparkles className="size-3 mr-1.5" />
+              Subscribe
+            </Button>
+          </div>
+
+          {/* Three dot selector */}
+          <div className="flex items-center gap-2">
+            {plans.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setActivePlan(i)}
+                className={`rounded-full transition-all duration-200 ${
+                  activePlan === i
+                    ? "size-2.5 bg-primary"
+                    : "size-2 bg-muted-foreground/30 hover:bg-muted-foreground/50"
+                }`}
+                aria-label={`View ${plans[i].name} plan`}
+              />
+            ))}
+          </div>
         </div>
       </div>
 

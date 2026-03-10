@@ -1,0 +1,78 @@
+
+> my-project@0.1.0 dev /home/iem/v0-hirevia-main
+> next dev
+
+▲ Next.js 16.1.6 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://10.10.10.206:3000
+
+✓ Starting...
+Attention: Next.js now collects completely anonymous telemetry regarding usage.
+This information is used to shape Next.js' roadmap and prioritize features.
+You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+https://nextjs.org/telemetry
+
+
+  We detected TypeScript in your project and reconfigured your tsconfig.json file for you.
+  The following suggested values were added to your tsconfig.json. These values can be changed to fit your project's needs:
+
+  	- include was updated to add '.next/dev/types/**/*.ts'
+
+✓ Ready in 444ms
+⨯ ./app/globals.css
+Error evaluating Node.js code
+Error: Cannot find native binding. npm has a bug related to optional dependencies (https://github.com/npm/cli/issues/4828). Please try `npm i` again after removing both package-lock.json and node_modules directory.
+    [at Object.<anonymous> (/home/iem/v0-hirevia-main/node_modules/.pnpm/@tailwindcss+oxide@4.2.0/node_modules/@tailwindcss/oxide/index.js:559:11)]
+    [at Module._compile (node:internal/modules/cjs/loader:1521:14)]
+    [at Module._extensions..js (node:internal/modules/cjs/loader:1623:10)]
+    [at Module.load (node:internal/modules/cjs/loader:1266:32)]
+    [at Module._load (node:internal/modules/cjs/loader:1091:12)]
+    [at Module.require (node:internal/modules/cjs/loader:1289:19)]
+    [at require (node:internal/modules/helpers:182:18)]
+    [at Object.<anonymous> (/home/iem/v0-hirevia-main/node_modules/.pnpm/@tailwindcss+postcss@4.2.0/node_modules/@tailwindcss/postcss/dist/index.js:1:1406)]
+    [at Module._compile (node:internal/modules/cjs/loader:1521:14)]
+    [at Module._extensions..js (node:internal/modules/cjs/loader:1623:10)]
+Caused by: Error: Cannot find module '@tailwindcss/oxide-linux-x64-gnu'
+Require stack:
+- /home/iem/v0-hirevia-main/node_modules/.pnpm/@tailwindcss+oxide@4.2.0/node_modules/@tailwindcss/oxide/index.js
+- /home/iem/v0-hirevia-main/node_modules/.pnpm/@tailwindcss+postcss@4.2.0/node_modules/@tailwindcss/postcss/dist/index.js
+- /home/iem/v0-hirevia-main/.next/dev/build/chunks/[root-of-the-server]__51225daf._.js
+- /home/iem/v0-hirevia-main/.next/dev/build/chunks/[turbopack]_runtime.js
+- /home/iem/v0-hirevia-main/.next/dev/build/postcss.js
+    [at Module._resolveFilename (node:internal/modules/cjs/loader:1207:15)]
+    [at Module._load (node:internal/modules/cjs/loader:1038:27)]
+    [at Module.require (node:internal/modules/cjs/loader:1289:19)]
+    [at require (node:internal/modules/helpers:182:18)]
+    [at requireNative (/home/iem/v0-hirevia-main/node_modules/.pnpm/@tailwindcss+oxide@4.2.0/node_modules/@tailwindcss/oxide/index.js:288:27)]
+    [at Object.<anonymous> (/home/iem/v0-hirevia-main/node_modules/.pnpm/@tailwindcss+oxide@4.2.0/node_modules/@tailwindcss/oxide/index.js:526:17)]
+    [at Module._compile (node:internal/modules/cjs/loader:1521:14)]
+    [at Module._extensions..js (node:internal/modules/cjs/loader:1623:10)]
+    [at Module.load (node:internal/modules/cjs/loader:1266:32)]
+    [at Module._load (node:internal/modules/cjs/loader:1091:12)]
+Caused by: Error: Cannot find module './tailwindcss-oxide.linux-x64-gnu.node'
+Require stack:
+- /home/iem/v0-hirevia-main/node_modules/.pnpm/@tailwindcss+oxide@4.2.0/node_modules/@tailwindcss/oxide/index.js
+- /home/iem/v0-hirevia-main/node_modules/.pnpm/@tailwindcss+postcss@4.2.0/node_modules/@tailwindcss/postcss/dist/index.js
+- /home/iem/v0-hirevia-main/.next/dev/build/chunks/[root-of-the-server]__51225daf._.js
+- /home/iem/v0-hirevia-main/.next/dev/build/chunks/[turbopack]_runtime.js
+- /home/iem/v0-hirevia-main/.next/dev/build/postcss.js
+    [at Module._resolveFilename (node:internal/modules/cjs/loader:1207:15)]
+    [at Module._load (node:internal/modules/cjs/loader:1038:27)]
+    [at Module.require (node:internal/modules/cjs/loader:1289:19)]
+    [at require (node:internal/modules/helpers:182:18)]
+    [at requireNative (/home/iem/v0-hirevia-main/node_modules/.pnpm/@tailwindcss+oxide@4.2.0/node_modules/@tailwindcss/oxide/index.js:283:18)]
+    [at Object.<anonymous> (/home/iem/v0-hirevia-main/node_modules/.pnpm/@tailwindcss+oxide@4.2.0/node_modules/@tailwindcss/oxide/index.js:526:17)]
+    [at Module._compile (node:internal/modules/cjs/loader:1521:14)]
+    [at Module._extensions..js (node:internal/modules/cjs/loader:1623:10)]
+    [at Module.load (node:internal/modules/cjs/loader:1266:32)]
+    [at Module._load (node:internal/modules/cjs/loader:1091:12)]
+
+Import trace:
+  Client Component Browser:
+    ./app/globals.css [Client Component Browser]
+    ./app/layout.tsx [Server Component]
+
+
+ HEAD / 500 in 2.7s (compile: 2.7s, render: 88ms)
+ ELIFECYCLE  Command failed.
+[?25h

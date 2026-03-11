@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
@@ -11,13 +12,15 @@ import {
   Brain,
   BarChart3,
   Wallet,
-  ShieldCheck,
   Sparkles,
   GraduationCap,
   Mic,
+  Menu,
 } from "lucide-react"
-
 import { Lock } from "lucide-react"
+import { useIsMobile } from "@/hooks/use-mobile"
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { Button } from "@/components/ui/button"
 
 const mainNav = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -35,15 +38,13 @@ const premiumNav = [
 
 const bottomNav = [
   { label: "Credits Wallet", href: "/dashboard/credits", icon: Wallet },
-  { label: "Admin Panel", href: "/dashboard/admin", icon: ShieldCheck },
 ]
 
-export function AppSidebar() {
+function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname()
-
   return (
-    <aside className="flex h-screen w-64 flex-col bg-sidebar text-sidebar-foreground border-r border-sidebar-border shrink-0">
-      <div className="flex items-center gap-2.5 px-6 py-5 border-b border-sidebar-border">
+    <>
+      <div className="flex items-center gap-2.5 px-6 py-5 border-b border-sidebar-border md:border-0">
         <div className="flex items-center justify-center size-8 rounded-lg bg-sidebar-primary">
           <Sparkles className="size-4 text-sidebar-primary-foreground" />
         </div>
@@ -61,6 +62,7 @@ export function AppSidebar() {
               <li key={item.href}>
                 <Link
                   href={item.href}
+                  onClick={onNavigate}
                   className={cn(
                     "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
                     isActive
@@ -85,6 +87,7 @@ export function AppSidebar() {
                 <li key={item.href}>
                   <Link
                     href={item.href}
+                    onClick={onNavigate}
                     className={cn(
                       "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
                       isActive
@@ -100,10 +103,9 @@ export function AppSidebar() {
             })}
           </ul>
         </div>
-
       </nav>
 
-      {/* Premium Section - pinned above profile, always visible */}
+      {/* Premium Section */}
       <div className="px-3 pb-2 border-t border-sidebar-border pt-3">
         <span className="flex items-center gap-1.5 px-3 mb-2 text-[10px] font-semibold uppercase tracking-widest text-sidebar-foreground/40">
           <Lock className="size-3" />
@@ -116,6 +118,7 @@ export function AppSidebar() {
               <li key={item.href}>
                 <Link
                   href={item.href}
+                  onClick={onNavigate}
                   className={cn(
                     "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
                     isActive
@@ -146,6 +149,41 @@ export function AppSidebar() {
           </div>
         </div>
       </div>
+    </>
+  )
+}
+
+export function AppSidebar() {
+  const isMobile = useIsMobile()
+  const [open, setOpen] = useState(false)
+
+  if (isMobile) {
+    return (
+      <div className="contents md:hidden">
+        <header className="fixed top-0 left-0 right-0 z-40 flex h-14 items-center gap-3 border-b border-sidebar-border bg-sidebar px-4">
+          <Sheet open={open} onOpenChange={setOpen}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" className="text-sidebar-foreground shrink-0">
+                <Menu className="size-5" />
+                <span className="sr-only">Open menu</span>
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-64 p-0 flex flex-col bg-sidebar text-sidebar-foreground border-sidebar-border">
+              <SidebarContent onNavigate={() => setOpen(false)} />
+            </SheetContent>
+          </Sheet>
+          <div className="flex items-center gap-2">
+            <Sparkles className="size-4 text-sidebar-primary" />
+            <span className="font-semibold">Hirevia</span>
+          </div>
+        </header>
+      </div>
+    )
+  }
+
+  return (
+    <aside className="hidden md:flex h-screen w-64 flex-col bg-sidebar text-sidebar-foreground border-r border-sidebar-border shrink-0">
+      <SidebarContent />
     </aside>
   )
 }

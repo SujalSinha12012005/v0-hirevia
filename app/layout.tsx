@@ -1,6 +1,7 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
+import { Providers } from '@/components/providers'
 import './globals.css'
 
 const _geist = Geist({ subsets: ["latin"] });
@@ -10,6 +11,11 @@ export const metadata: Metadata = {
   title: 'Hirevia - AI-Powered Placement Readiness',
   description: 'AI-powered placement readiness platform for students. Analyze resumes, match job descriptions, and track your career readiness.',
   generator: 'v0.app',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'Hirevia',
+  },
   icons: {
     icon: [
       {
@@ -29,6 +35,16 @@ export const metadata: Metadata = {
   },
 }
 
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#4a4a9e' },
+    { media: '(prefers-color-scheme: dark)', color: '#4a4a9e' },
+  ],
+}
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -37,7 +53,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="font-sans antialiased">
-        {children}
+        <Providers>
+          {children}
+        </Providers>
         <Analytics />
       </body>
     </html>

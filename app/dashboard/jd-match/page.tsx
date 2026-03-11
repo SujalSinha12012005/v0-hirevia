@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
+import { useAuth } from "@/context/auth-context"
 import {
   Briefcase,
   Sparkles,
@@ -17,6 +18,8 @@ import {
   Code2,
   Cloud,
   BarChart3,
+  FileText,
+  AlertCircle,
 } from "lucide-react"
 
 const suggestedRoles = [
@@ -159,13 +162,90 @@ function getMatchLabel(pct: number) {
   return { text: "Low Match", color: "text-destructive" }
 }
 
+// Calculate match based on actual resume data
+function calculateMatchFromResume(resumeData: { score: number; missingSkills?: string[] } | undefined, jobDescription: string): MatchResult {
+  if (!resumeData) {
+    return defaultMatch
+  }
+  
+  const resumeScore = resumeData.score
+  const resumeMissingSkills = resumeData.missingSkills || []
+  const jdLower = jobDescription.toLowerCase()
+  
+  // Extract skills from JD
+  const jdSkills = [
+    'python', 'javascript', 'typescript', 'react', 'node', 'java', 'sql', 'mongodb', 
+    'postgresql', 'aws', 'docker', 'kubernetes', 'git', 'html', 'css', 'rest', 'api',
+    'tensorflow', 'pytorch', 'scikit-learn', 'nlp', 'computer vision', 'mlops',
+    'linux', 'networking', 'security', 'firewall', 'siem', 'penetration testing',
+    ' tableau', 'power bi', 'excel', 'statistics', 'data modeling', 'etl',
+    'terraform', 'gcp', 'azure', 'ci/cd', 'jenkins', 'agile', 'scrum'
+  ]
+  
+  // Count skills from JD that user might have
+  let matchedCount = 0
+  const matchedKeywords: string[] = []
+  const missingKeywords: string[] = []
+  
+  // Base match on resume score (60% weight)
+  const baseScore = Math.round(resumeScore * 0.6)
+  
+  // Check for skill matches from JD
+  for (const skill of jdSkills) {
+    if (jdLower.includes(skill)) {
+      // Check if this skill is in user's missing skills
+      const isMissing = resumeMissingSkills.some(ms => ms.toLowerCase().includes(skill))
+      if (!isMissing) {
+        matchedCount++
+        matchedKeywords.push(skill.charAt(0).toUpperCase() + skill.slice(1))
+      } else {
+        missingKeywords.push(skill.charAt(0).toUpperCase() + skill.slice(1))
+      }
+    }
+  }
+  
+  // Add some JD-specific skills as missing if not analyzed
+  const commonSkills = ['Python', 'JavaScript', 'React', 'Node.js', 'SQL', 'Git', 'REST APIs', 'Docker']
+  for (const skill of commonSkills) {
+    if (jdLower.includes(skill.toLowerCase()) && !matchedKeywords.includes(skill) && !missingKeywords.includes(skill)) {
+      missingKeywords.push(skill)
+    }
+  }
+  
+  // Calculate final match percentage
+  const skillBonus = Math.min(30, matchedCount * 5)
+  const matchPercentage = Math.min(95, baseScore + skillBonus)
+  
+  // Generate tips based on actual missing skills
+  const tips = [
+    ...resumeMissingSkills.slice(0, 3).map(skill => `Add ${skill} to your resume - it's required for this role`),
+    resumeScore < 70 ? "Improve your resume score by adding more quantifiable achievements" : "Your resume is strong! Focus on tailoring your summary",
+    missingKeywords.length > 0 ? `Learn ${missingKeywords.slice(0, 2).join(' and ')} to improve your match` : "Your skills align well with this role",
+  ].filter(Boolean)
+  
+  return {
+    matchPercentage,
+    matchedKeywords: matchedKeywords.slice(0, 8),
+    missingKeywords: missingKeywords.slice(0, 8),
+    tips
+  }
+}
+
 export default function JDMatchPage() {
+  const { user, updateJDMatch } = useAuth()
   const [jobDescription, setJobDescription] = useState("")
   const [showResults, setShowResults] = useState(false)
   const [isMatching, setIsMatching] = useState(false)
 
+  // Get actual resume data from auth context
+  const resumeData = user?.resumeData
+  const hasResumeAnalyzed = resumeData?.score !== undefined && resumeData?.score > 0
+  
+  // Calculate match based on actual resume data
   const selectedRole = getSelectedRole(jobDescription)
-  const matchData = selectedRole && roleMatchData[selectedRole] ? roleMatchData[selectedRole] : defaultMatch
+  const matchData = hasResumeAnalyzed 
+    ? calculateMatchFromResume(resumeData, jobDescription)
+    : (selectedRole && roleMatchData[selectedRole] ? roleMatchData[selectedRole] : defaultMatch)
   const matchLabel = getMatchLabel(matchData.matchPercentage)
 
   function handleMatch() {
@@ -174,6 +254,9 @@ export default function JDMatchPage() {
     setTimeout(() => {
       setIsMatching(false)
       setShowResults(true)
+      
+      // Update JD match score in global state
+      updateJDMatch(matchData.matchPercentage)
     }, 1500)
   }
 
@@ -187,6 +270,20 @@ export default function JDMatchPage() {
           Paste a job description to see how well your resume matches.
         </p>
       </div>
+
+      {/* Resume Warning */}
+      {!hasResumeAnalyzed && (
+        <div className="flex items-start gap-3 p-4 rounded-lg bg-warning/10 border border-warning/20">
+          <AlertCircle className="size-5 text-warning shrink-0 mt-0.5" />
+          <div>
+            <p className="text-sm font-medium text-warning">No resume analyzed yet</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Please analyze your resume first to get accurate JD matching results. 
+              <a href="/dashboard/resume" className="text-primary underline ml-1">Go to Resume Analysis</a>
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Input Section */}
       <Card>

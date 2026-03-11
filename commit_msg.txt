@@ -1,0 +1,8 @@
+feat: Add resume analysis with global data updates
+
+- Add ResumeData type to AuthContext for storing analysis results
+- Update resume page to save analysis data to global state
+- Update dashboard to read resume score, credits from AuthContext
+- Update JD Match and Readiness pages with dynamic data
+- Add responsive design fixes for mobile
+- Update README with complete documentation

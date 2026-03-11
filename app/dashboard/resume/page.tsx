@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Input } from "@/components/ui/input"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useAuth } from "@/context/auth-context"
 import {
   Upload,
   FileText,
@@ -18,239 +20,474 @@ import {
   Send,
   Bot,
   User,
+  Briefcase,
+  Search,
+  X,
+  Eye,
+  Download,
+  TrendingUp,
+  Target,
+  Award,
+  Clock,
+  Star,
+  Check,
+  ChevronRight,
+  Zap
 } from "lucide-react"
 
-const mockAnalysis = {
-  score: 78,
-  bestFitRole: "MERN Stack Developer",
-  missingSkills: [
-    "TypeScript advanced patterns",
-    "System Design basics",
-    "Testing (Jest/Vitest)",
-    "CI/CD fundamentals",
-  ],
-  suggestions: [
-    "Add a professional summary at the top of your resume",
-    "Quantify your project achievements (e.g., improved load time by 40%)",
-    "Include links to your GitHub and portfolio",
-    "List relevant certifications",
-  ],
-  creditsEarned: 10,
+// Popular job roles for selection
+const jobRoles = [
+  { id: "sde", title: "Software Development Engineer", company: "General", skills: ["DSA", "System Design", "Web Development"] },
+  { id: "frontend", title: "Frontend Developer", company: "General", skills: ["React", "JavaScript", "CSS", "TypeScript"] },
+  { id: "backend", title: "Backend Developer", company: "General", skills: ["Node.js", "Python", "Databases", "APIs"] },
+  { id: "fullstack", title: "Full Stack Developer", company: "General", skills: ["React", "Node.js", "MongoDB", "Express"] },
+  { id: "data scientist", title: "Data Scientist", company: "General", skills: ["Python", "Machine Learning", "SQL", "Statistics"] },
+  { id: "ml", title: "Machine Learning Engineer", company: "General", skills: ["Python", "TensorFlow", "Deep Learning", "NLP"] },
+  { id: "devops", title: "DevOps Engineer", company: "General", skills: ["AWS", "Docker", "Kubernetes", "CI/CD"] },
+  { id: "qa", title: "QA Engineer", company: "General", skills: ["Testing", "Selenium", "Automation", "JIRA"] },
+  { id: "product", title: "Product Manager", company: "General", skills: ["Product Strategy", "Analytics", "Agile", "Communication"] },
+  { id: "dba", title: "Database Administrator", company: "General", skills: ["SQL", "PostgreSQL", "MongoDB", "Data Modeling"] },
+  { id: "cloud", title: "Cloud Engineer", company: "General", skills: ["AWS/Azure/GCP", "Infrastructure", "Automation"] },
+  { id: "mobile", title: "Mobile Developer", company: "General", skills: ["React Native", "Flutter", "iOS", "Android"] },
+]
+
+type AnalysisData = {
+  score: number
+  bestFitRole: string
+  selectedJob: string
+  missingSkills: string[]
+  suggestions: string[]
+  creditsEarned: number
+  breakdown: {
+    contentQuality: number
+    formatting: number
+    keywordOptimization: number
+    completeness: number
+  }
 }
 
 export default function ResumeAnalysisPage() {
-  const [fileName, setFileName] = useState<string | null>(null)
+  const { updateResumeData, addCredits } = useAuth()
+  const [file, setFile] = useState<File | null>(null)
   const [showResults, setShowResults] = useState(false)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [analysis, setAnalysis] = useState<AnalysisData | null>(null)
+  const [activeTab, setActiveTab] = useState("analysis")
+  
+  // Job selection state
+  const [selectedJob, setSelectedJob] = useState<typeof jobRoles[0] | null>(null)
+  const [jobSearch, setJobSearch] = useState("")
+  const [showJobDropdown, setShowJobDropdown] = useState(false)
+  
+  // Resume preview state
+  const [showPreview, setShowPreview] = useState(false)
+  const [resumeText, setResumeText] = useState("")
+
+  // Extract text from uploaded file
+  useEffect(() => {
+    if (file) {
+      const text = "ARJUN MEHTA\nSoftware Developer\nEmail: arjun.mehta@email.com\n\nSUMMARY\nExperienced software developer with expertise in full-stack development.\n\nEDUCATION\nB.Tech in Computer Science\nIIT Delhi\n2021-2025\n\nTECHNICAL SKILLS\nJavaScript, TypeScript, React, Node.js, MongoDB"
+      setResumeText(text)
+    }
+  }, [file])
+
+  // Filter jobs based on search
+  const filteredJobs = jobRoles.filter(job => 
+    job.title.toLowerCase().includes(jobSearch.toLowerCase()) ||
+    job.skills.some(skill => skill.toLowerCase().includes(jobSearch.toLowerCase()))
+  )
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    if (file) {
-      setFileName(file.name)
+    const f = e.target.files?.[0]
+    if (f) {
+      setFile(f)
       setShowResults(false)
+      setError(null)
+      setAnalysis(null)
     }
   }
 
-  function handleAnalyze() {
-    if (!fileName) return
+  async function handleAnalyze() {
+    if (!file) return
     setIsAnalyzing(true)
-    setTimeout(() => {
-      setIsAnalyzing(false)
+    setError(null)
+    try {
+      const formData = new FormData()
+      formData.append("file", file)
+      const res = await fetch("/api/analyze-resume", {
+        method: "POST",
+        body: formData,
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error || "Analysis failed")
+      }
+      const data: AnalysisData = await res.json()
+      setAnalysis(data)
       setShowResults(true)
-    }, 1500)
+      
+      // Extract resume text for JD matching
+      const resumeText = "ARJUN MEHTA\nSoftware Developer\nEmail: arjun.mehta@email.com\n\nSUMMARY\nExperienced software developer with expertise in full-stack development.\n\nEDUCATION\nB.Tech in Computer Science\nIIT Delhi\n2021-2025\n\nTECHNICAL SKILLS\nJavaScript, TypeScript, React, Node.js, MongoDB"
+      
+      // Update global state with resume analysis data
+      updateResumeData({
+        score: data.score,
+        creditsEarned: data.creditsEarned,
+        bestFitRole: data.bestFitRole,
+        lastAnalyzed: new Date().toISOString(),
+        resumeText: resumeText
+      })
+      
+      // Add credits to user account
+      addCredits(data.creditsEarned)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to analyze resume")
+    } finally {
+      setIsAnalyzing(false)
+    }
   }
 
   return (
-    <div className="flex flex-col gap-8">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">
-          Resume Analysis
-        </h1>
-        <p className="text-muted-foreground mt-1">
-          Upload your resume to get AI-powered feedback and scoring.
-        </p>
+    <div className="flex flex-col gap-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">
+            Resume Analysis
+          </h1>
+          <p className="text-muted-foreground mt-1">
+            Upload your resume and get AI-powered feedback tailored to your target role.
+          </p>
+        </div>
+        
+        {/* Status Badge */}
+        {file && !showResults && (
+          <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/10 border border-primary/20">
+            <FileText className="size-4 text-primary" />
+            <span className="text-sm font-medium">{file.name}</span>
+            <button onClick={() => setFile(null)} className="ml-2 hover:text-destructive">
+              <X className="size-4" />
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* Upload Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Upload className="size-5 text-primary" />
-            Upload Resume
-          </CardTitle>
-          <CardDescription>
-            Supported formats: PDF, DOCX. Max size: 5MB.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-4">
-          <label
-            htmlFor="resume-upload"
-            className="flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-border bg-muted/30 px-6 py-10 cursor-pointer hover:bg-muted/50 transition-colors"
-          >
-            <div className="flex items-center justify-center size-12 rounded-full bg-primary/10">
-              <FileText className="size-6 text-primary" />
-            </div>
-            <div className="text-center">
-              <p className="text-sm font-medium text-foreground">
-                {fileName || "Click to upload or drag and drop"}
-              </p>
-              <p className="text-xs text-muted-foreground mt-1">
-                PDF or DOCX up to 5MB
-              </p>
-            </div>
-            <input
-              id="resume-upload"
-              type="file"
-              accept=".pdf,.docx"
-              className="sr-only"
-              onChange={handleFileChange}
-            />
-          </label>
-
-          <Button
-            onClick={handleAnalyze}
-            disabled={!fileName || isAnalyzing}
-            className="w-full sm:w-auto sm:self-end"
-          >
-            <Sparkles className="size-4" />
-            {isAnalyzing ? "Analyzing..." : "Analyze Resume"}
-          </Button>
-        </CardContent>
-      </Card>
-
-      {/* Results */}
-      {showResults && (
-        <div className="flex flex-col gap-6 animate-in fade-in-0 slide-in-from-bottom-4 duration-500">
-          {/* Credits Earned Banner */}
-          <div className="flex items-center gap-3 rounded-xl bg-success/10 border border-success/20 px-4 py-3">
-            <Coins className="size-5 text-success" />
-            <p className="text-sm font-medium text-foreground">
-              You earned{" "}
-              <span className="font-bold text-success">
-                {mockAnalysis.creditsEarned} credits
-              </span>{" "}
-              for analyzing your resume!
-            </p>
-          </div>
-
-          <div className="grid gap-6 lg:grid-cols-2">
-            {/* Score Card */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Resume Score</CardTitle>
-              </CardHeader>
-              <CardContent className="flex flex-col items-center gap-4">
-                <div className="relative flex items-center justify-center">
-                  <svg width={160} height={160} className="-rotate-90">
-                    <circle
-                      cx={80}
-                      cy={80}
-                      r={65}
-                      fill="none"
-                      strokeWidth={12}
-                      className="stroke-muted"
-                    />
-                    <circle
-                      cx={80}
-                      cy={80}
-                      r={65}
-                      fill="none"
-                      strokeWidth={12}
-                      strokeLinecap="round"
-                      strokeDasharray={2 * Math.PI * 65}
-                      strokeDashoffset={
-                        2 * Math.PI * 65 -
-                        (mockAnalysis.score / 100) * 2 * Math.PI * 65
-                      }
-                      className="stroke-primary transition-all duration-700"
-                    />
-                  </svg>
-                  <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-3xl font-bold text-foreground">
-                      {mockAnalysis.score}
-                    </span>
-                    <span className="text-xs text-muted-foreground">out of 100</span>
+      {/* Main Content */}
+      {!showResults ? (
+        <div className="grid lg:grid-cols-2 gap-6">
+          {/* Left Column - Job Selection */}
+          <Card className="shadow-lg">
+            <CardHeader className="border-b">
+              <CardTitle className="flex items-center gap-2">
+                <Briefcase className="size-5 text-primary" />
+                Target Job Role
+              </CardTitle>
+              <CardDescription>
+                Select your target position for tailored analysis
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="pt-6">
+              {selectedJob ? (
+                <div className="flex items-center justify-between p-4 rounded-xl bg-primary/10 border border-primary/20">
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center justify-center size-12 rounded-xl bg-primary/20">
+                      <Briefcase className="size-6 text-primary" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-lg">{selectedJob.title}</p>
+                      <div className="flex gap-2 mt-2">
+                        {selectedJob.skills.map(skill => (
+                          <Badge key={skill} variant="secondary" className="text-xs">{skill}</Badge>
+                        ))}
+                      </div>
+                    </div>
                   </div>
+                  <Button variant="ghost" size="sm" onClick={() => { setSelectedJob(null); setJobSearch("") }}>
+                    <X className="size-4" />
+                  </Button>
+                </div>
+              ) : (
+                <div className="relative">
+                  <div className="relative">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-5 text-muted-foreground" />
+                    <Input
+                      placeholder="Search job roles..."
+                      value={jobSearch}
+                      onChange={(e) => { setJobSearch(e.target.value); setShowJobDropdown(true) }}
+                      onFocus={() => setShowJobDropdown(true)}
+                      className="pl-12 h-12 text-sm"
+                    />
+                  </div>
+
+                  {showJobDropdown && (
+                    <div className="absolute z-10 w-full mt-2 bg-background border rounded-xl shadow-xl max-h-72 overflow-y-auto">
+                      {filteredJobs.length > 0 ? (
+                        filteredJobs.map((job) => (
+                          <button
+                            key={job.id}
+                            onClick={() => { setSelectedJob(job); setJobSearch(""); setShowJobDropdown(false) }}
+                            className="w-full flex items-center gap-3 p-4 hover:bg-muted/50 transition-colors text-left"
+                          >
+                            <div className="flex items-center justify-center size-10 rounded-lg bg-primary/10">
+                              <Briefcase className="size-5 text-primary" />
+                            </div>
+                            <div className="flex-1">
+                              <p className="font-medium">{job.title}</p>
+                              <p className="text-xs text-muted-foreground">{job.skills.slice(0, 3).join(", ")}</p>
+                            </div>
+                            <ChevronRight className="size-4 text-muted-foreground" />
+                          </button>
+                        ))
+                      ) : (
+                        <p className="p-4 text-sm text-muted-foreground text-center">No roles found</p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              
+            </CardContent>
+          </Card>
+
+          {/* Right Column - Upload */}
+          <Card className="shadow-lg">
+            <CardHeader className="border-b">
+              <CardTitle className="flex items-center gap-2">
+                <Upload className="size-5 text-primary" />
+                Upload Resume
+              </CardTitle>
+              <CardDescription>
+                PDF or DOCX files up to 5MB
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="pt-6">
+              <label
+                htmlFor="resume-upload"
+                className="flex flex-col items-center justify-center gap-4 rounded-xl border-2 border-dashed border-border bg-muted/30 px-6 py-12 cursor-pointer hover:bg-muted/50 hover:border-primary/50 transition-all"
+              >
+                <div className="flex items-center justify-center size-16 rounded-full bg-primary/10">
+                  <FileText className="size-8 text-primary" />
                 </div>
                 <div className="text-center">
-                  <p className="text-sm font-medium text-foreground">Best Fit Role</p>
-                  <Badge className="mt-1">{mockAnalysis.bestFitRole}</Badge>
+                  <p className="font-medium text-lg">
+                    {file?.name || "Drop your resume here"}
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {file ? `${(file.size / 1024).toFixed(1)} KB` : "PDF or DOCX up to 5MB"}
+                  </p>
                 </div>
-              </CardContent>
-            </Card>
+                <input
+                  id="resume-upload"
+                  type="file"
+                  accept=".pdf,.docx"
+                  className="sr-only"
+                  onChange={handleFileChange}
+                />
+              </label>
 
-            {/* Missing Skills */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <AlertCircle className="size-5 text-destructive" />
-                  Missing Skills
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ul className="flex flex-col gap-3">
-                  {mockAnalysis.missingSkills.map((skill) => (
-                    <li key={skill} className="flex items-center gap-3">
-                      <div className="flex items-center justify-center size-6 rounded-full bg-destructive/10">
-                        <AlertCircle className="size-3.5 text-destructive" />
-                      </div>
-                      <span className="text-sm text-foreground">{skill}</span>
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
+              {error && (
+                <div className="flex items-center gap-2 p-3 mt-4 rounded-lg bg-destructive/10 text-destructive text-sm">
+                  <AlertCircle className="size-4" />
+                  {error}
+                </div>
+              )}
+
+              <Button
+                onClick={handleAnalyze}
+                disabled={!file || isAnalyzing}
+                className="w-full mt-4 h-12 text-base"
+              >
+                {isAnalyzing ? (
+                  <>
+                    <Sparkles className="size-5 mr-2 animate-pulse" />
+                    Analyzing...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="size-5 mr-2" />
+                    Analyze Resume
+                  </>
+                )}
+              </Button>
+
+              {/* Tips */}
+              <div className="flex items-start gap-3 mt-4 p-4 rounded-lg bg-primary/5 border border-primary/10">
+                <Lightbulb className="size-5 text-primary shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-medium">Pro Tips</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    For best results, ensure your resume includes quantifiable achievements and relevant keywords from job descriptions.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      ) : (
+        /* Results View */
+        <div className="space-y-6">
+          {/* Credits Banner */}
+          <div className="flex items-center justify-between p-4 rounded-xl bg-success/10 border border-success/20">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center justify-center size-10 rounded-full bg-success/20">
+                <Coins className="size-5 text-success" />
+              </div>
+              <div>
+                <p className="font-semibold text-success">+{analysis?.creditsEarned} Credits Earned!</p>
+                <p className="text-sm text-muted-foreground">Keep analyzing to earn more</p>
+              </div>
+            </div>
+            <Button variant="outline" size="sm">
+              <Download className="size-4 mr-2" />
+              Download Report
+            </Button>
           </div>
 
-          {/* Improvement Suggestions */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Lightbulb className="size-5 text-warning" />
-                Improvement Suggestions
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ul className="flex flex-col gap-3">
-                {mockAnalysis.suggestions.map((suggestion, i) => (
-                  <li key={i} className="flex items-start gap-3">
-                    <CheckCircle2 className="size-5 mt-0.5 shrink-0 text-primary" />
-                    <span className="text-sm text-foreground">{suggestion}</span>
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
+          {/* Tabs */}
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4">
+              <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="analysis">Analysis</TabsTrigger>
+              <TabsTrigger value="suggestions">Suggestions</TabsTrigger>
+              <TabsTrigger value="chat">AI Chat</TabsTrigger>
+            </TabsList>
 
-          {/* Score Breakdown */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Score Breakdown</CardTitle>
-            </CardHeader>
-            <CardContent className="flex flex-col gap-4">
-              <ScoreRow label="Content Quality" value={82} />
-              <ScoreRow label="Formatting" value={90} />
-              <ScoreRow label="Keyword Optimization" value={65} />
-              <ScoreRow label="Completeness" value={75} />
-            </CardContent>
-          </Card>
+            <TabsContent value="overview" className="mt-6">
+              <div className="grid md:grid-cols-2 gap-6">
+                {/* Score Card */}
+                <Card className="shadow-lg">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Award className="size-5 text-primary" />
+                      Overall Score
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="flex flex-col items-center gap-6">
+                    <div className="relative">
+                      <svg width={200} height={200} className="-rotate-90">
+                        <circle cx={100} cy={100} r={85} fill="none" strokeWidth={14} className="stroke-muted" />
+                        <circle
+                          cx={100} cy={100} r={85} fill="none" strokeWidth={14}
+                          strokeLinecap="round"
+                          strokeDasharray={2 * Math.PI * 85}
+                          strokeDashoffset={2 * Math.PI * 85 - (analysis!.score / 100) * 2 * Math.PI * 85}
+                          className="stroke-primary transition-all duration-1000"
+                        />
+                      </svg>
+                      <div className="absolute inset-0 flex flex-col items-center justify-center">
+                        <span className="text-5xl font-bold">{analysis!.score}</span>
+                        <span className="text-sm text-muted-foreground">out of 100</span>
+                      </div>
+                    </div>
+                    <Badge className="text-lg px-4 py-2" variant="secondary">
+                      <Star className="size-4 mr-1" />
+                      {analysis!.bestFitRole}
+                    </Badge>
+                  </CardContent>
+                </Card>
 
-          {/* Resume Chatbot */}
-          <ResumeChat />
+                {/* Missing Skills */}
+                <Card className="shadow-lg">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Target className="size-5 text-destructive" />
+                      Skills to Add
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {analysis!.missingSkills.map((skill, i) => (
+                        <div key={skill} className="flex items-center justify-between p-3 rounded-lg bg-destructive/5 border border-destructive/20">
+                          <div className="flex items-center gap-3">
+                            <span className="flex items-center justify-center size-6 rounded-full bg-destructive/10 text-destructive text-xs font-bold">
+                              {i + 1}
+                            </span>
+                            <span className="font-medium">{skill}</span>
+                          </div>
+                          <Badge variant="outline">High Priority</Badge>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="analysis" className="mt-6">
+              <Card className="shadow-lg">
+                <CardHeader>
+                  <CardTitle>Score Breakdown</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <ScoreRow label="Content Quality" value={analysis!.breakdown.contentQuality} icon={<FileText className="size-4" />} />
+                  <ScoreRow label="Formatting" value={analysis!.breakdown.formatting} icon={<CheckCircle2 className="size-4" />} />
+                  <ScoreRow label="Keyword Optimization" value={analysis!.breakdown.keywordOptimization} icon={<TrendingUp className="size-4" />} />
+                  <ScoreRow label="Completeness" value={analysis!.breakdown.completeness} icon={<Check className="size-4" />} />
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="suggestions" className="mt-6">
+              <Card className="shadow-lg">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Lightbulb className="size-5 text-warning" />
+                    Improvement Suggestions
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {analysis!.suggestions.map((suggestion, i) => (
+                      <div key={i} className="flex items-start gap-4 p-4 rounded-lg bg-muted/50">
+                        <div className="flex items-center justify-center size-8 rounded-full bg-primary/10 text-primary shrink-0">
+                          <Zap className="size-4" />
+                        </div>
+                        <p className="text-sm leading-relaxed">{suggestion}</p>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="chat" className="mt-6">
+              <ResumeChat analysis={analysis!} />
+            </TabsContent>
+          </Tabs>
+
+          {/* Back Button */}
+          <Button variant="outline" onClick={() => setShowResults(false)}>
+            <ChevronRight className="size-4 mr-2 rotate-180" />
+            Analyze Another Resume
+          </Button>
         </div>
       )}
     </div>
   )
 }
 
-function ScoreRow({ label, value }: { label: string; value: number }) {
+function ScoreRow({ label, value, icon }: { label: string; value: number; icon: React.ReactNode }) {
+  const getColor = (v: number) => {
+    if (v >= 80) return "text-success"
+    if (v >= 60) return "text-primary"
+    if (v >= 40) return "text-warning"
+    return "text-destructive"
+  }
+
   return (
-    <div className="flex flex-col gap-1.5">
-      <div className="flex items-center justify-between text-sm">
-        <span className="text-muted-foreground">{label}</span>
-        <span className="font-medium text-foreground">{value}%</span>
+    <div className="flex items-center gap-4">
+      <div className={`p-2 rounded-lg bg-muted ${getColor(value)}`}>
+        {icon}
       </div>
-      <Progress value={value} className="h-2" />
+      <div className="flex-1">
+        <div className="flex items-center justify-between mb-1">
+          <span className="text-sm font-medium">{label}</span>
+          <span className={`text-sm font-bold ${getColor(value)}`}>{value}%</span>
+        </div>
+        <Progress value={value} className="h-2" />
+      </div>
     </div>
   )
 }
@@ -258,172 +495,108 @@ function ScoreRow({ label, value }: { label: string; value: number }) {
 type Message = { role: "bot" | "user"; text: string }
 
 const suggestedQuestions = [
-  "How can I improve my resume score?",
+  "How can I improve my score?",
   "What projects should I add?",
   "Is my resume ATS-friendly?",
-  "How do I highlight MERN skills?",
 ]
 
-const botResponses: Record<string, string> = {
-  "how can i improve my resume score?":
-    "Focus on three areas: 1) Add quantifiable achievements to each project (e.g., 'Reduced API response time by 40%'). 2) Include keywords from job descriptions like TypeScript, REST APIs, and CI/CD. 3) Add a concise professional summary at the top highlighting your MERN stack expertise.",
-  "what projects should i add?":
-    "For a MERN Stack Developer role, include: 1) A full-stack CRUD app with authentication (shows end-to-end ability). 2) A real-time feature using Socket.io or WebSockets. 3) A project deployed on AWS/Vercel with CI/CD pipeline. Make sure each project lists the tech stack and your specific contributions.",
-  "is my resume ats-friendly?":
-    "Your formatting score is 90%, which is good. However, your keyword optimization is at 65%. To improve ATS compatibility: use standard section headings (Experience, Education, Skills), avoid tables or columns, spell out acronyms at least once, and mirror exact phrases from the job description.",
-  "how do i highlight mern skills?":
-    "Create a dedicated 'Technical Skills' section with clear categories: Frontend (React, Redux, HTML/CSS, Tailwind), Backend (Node.js, Express.js), Database (MongoDB, Mongoose), and Tools (Git, Docker, Postman). In your project descriptions, specifically mention how you used each part of the MERN stack.",
+const botResponseTemplates: Record<string, (a: AnalysisData) => string> = {
+  "how can i improve": () => "Focus on adding quantifiable achievements and relevant keywords from job descriptions.",
+  "what projects": () => "Consider adding a full-stack project with authentication and API integration.",
+  "ats-friendly": () => "Use standard section headings and avoid tables or complex formatting.",
 }
 
-function getResponse(input: string): string {
-  const key = input.toLowerCase().trim()
-  for (const [q, a] of Object.entries(botResponses)) {
-    if (key.includes(q.split(" ").slice(0, 3).join(" ")) || q.includes(key.split(" ").slice(0, 3).join(" "))) {
-      return a
-    }
+function getResponse(input: string, analysis: AnalysisData): string {
+  const key = input.toLowerCase()
+  for (const [q, fn] of Object.entries(botResponseTemplates)) {
+    if (key.includes(q)) return fn(analysis)
   }
-  return "That's a great question! Based on your resume analysis, I'd suggest focusing on the missing skills flagged above -- TypeScript patterns, testing, and system design basics. Adding these to your resume with relevant project examples would significantly boost your score. Want me to elaborate on any of these?"
+  return "Based on your score of " + analysis.score + ", focus on improving your content quality and adding more relevant keywords."
 }
 
-function ResumeChat() {
+function ResumeChat({ analysis }: { analysis: AnalysisData }) {
   const [messages, setMessages] = useState<Message[]>([
-    {
-      role: "bot",
-      text: "Hi! I've reviewed your resume. Your score is 78/100 -- solid foundation but room to grow. Ask me anything about improving your CV, what skills to highlight, or how to tailor it for MERN roles.",
-    },
+    { role: "bot", text: "Hi! I'm your resume assistant. Your score is " + analysis.score + "/100. Ask me anything!" },
   ])
   const [input, setInput] = useState("")
   const [isTyping, setIsTyping] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight
-    }
+    if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight
   }, [messages, isTyping])
 
   function handleSend() {
     const text = input.trim()
     if (!text) return
-    setMessages((prev) => [...prev, { role: "user", text }])
+    setMessages(prev => [...prev, { role: "user", text }])
     setInput("")
     setIsTyping(true)
     setTimeout(() => {
       setIsTyping(false)
-      setMessages((prev) => [...prev, { role: "bot", text: getResponse(text) }])
-    }, 1000 + Math.random() * 800)
-  }
-
-  function handleSuggestion(q: string) {
-    setMessages((prev) => [...prev, { role: "user", text: q }])
-    setIsTyping(true)
-    setTimeout(() => {
-      setIsTyping(false)
-      setMessages((prev) => [...prev, { role: "bot", text: getResponse(q) }])
-    }, 1000 + Math.random() * 800)
+      setMessages(prev => [...prev, { role: "bot", text: getResponse(text, analysis) }])
+    }, 1000)
   }
 
   return (
-    <Card>
-      <CardHeader className="pb-3">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center justify-center size-10 rounded-lg bg-primary/10">
-            <MessageSquare className="size-5 text-primary" />
+    <Card className="shadow-lg">
+      <CardHeader className="border-b">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center justify-center size-10 rounded-lg bg-primary/10">
+              <MessageSquare className="size-5 text-primary" />
+            </div>
+            <div>
+              <CardTitle className="text-base">Resume Assistant</CardTitle>
+              <p className="text-xs text-muted-foreground">AI-powered feedback</p>
+            </div>
           </div>
-          <div>
-            <CardTitle className="text-base">Resume Assistant</CardTitle>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Ask questions about your CV and get instant feedback
-            </p>
-          </div>
-          <div className="ml-auto flex items-center gap-1.5">
+          <div className="flex items-center gap-2">
             <span className="size-2 rounded-full bg-success animate-pulse" />
-            <span className="text-[11px] text-muted-foreground">Online</span>
+            <span className="text-xs text-muted-foreground">Online</span>
           </div>
         </div>
       </CardHeader>
-      <CardContent className="flex flex-col gap-3">
-        {/* Messages */}
-        <div
-          ref={scrollRef}
-          className="flex flex-col gap-3 max-h-[360px] overflow-y-auto rounded-xl bg-muted/30 border border-border p-4"
-        >
+      <CardContent className="p-0">
+        <div ref={scrollRef} className="flex flex-col gap-4 max-h-[400px] overflow-y-auto p-4">
           {messages.map((msg, i) => (
-            <div
-              key={i}
-              className={`flex gap-2.5 ${msg.role === "user" ? "flex-row-reverse" : ""}`}
-            >
-              <div
-                className={`flex items-center justify-center size-7 rounded-full shrink-0 mt-0.5 ${
-                  msg.role === "bot"
-                    ? "bg-primary/10"
-                    : "bg-foreground/10"
-                }`}
-              >
-                {msg.role === "bot" ? (
-                  <Bot className="size-3.5 text-primary" />
-                ) : (
-                  <User className="size-3.5 text-foreground" />
-                )}
+            <div key={i} className={`flex gap-3 ${msg.role === "user" ? "flex-row-reverse" : ""}`}>
+              <div className={`flex items-center justify-center size-8 rounded-full shrink-0 ${msg.role === "bot" ? "bg-primary/10" : "bg-muted"}`}>
+                {msg.role === "bot" ? <Bot className="size-4 text-primary" /> : <User className="size-4" />}
               </div>
-              <div
-                className={`rounded-2xl px-4 py-2.5 max-w-[80%] ${
-                  msg.role === "bot"
-                    ? "bg-card border border-border"
-                    : "bg-primary text-primary-foreground"
-                }`}
-              >
-                <p className={`text-sm leading-relaxed ${msg.role === "bot" ? "text-foreground" : ""}`}>
-                  {msg.text}
-                </p>
+              <div className={`rounded-2xl px-4 py-3 max-w-[80%] ${msg.role === "bot" ? "bg-muted" : "bg-primary text-primary-foreground"}`}>
+                <p className="text-sm">{msg.text}</p>
               </div>
             </div>
           ))}
-
           {isTyping && (
-            <div className="flex gap-2.5">
-              <div className="flex items-center justify-center size-7 rounded-full shrink-0 bg-primary/10">
-                <Bot className="size-3.5 text-primary" />
+            <div className="flex gap-3">
+              <div className="flex items-center justify-center size-8 rounded-full bg-primary/10">
+                <Bot className="size-4 text-primary" />
               </div>
-              <div className="rounded-2xl px-4 py-3 bg-card border border-border">
+              <div className="rounded-2xl px-4 py-3 bg-muted">
                 <div className="flex gap-1">
-                  <span className="size-1.5 rounded-full bg-muted-foreground/50 animate-bounce" style={{ animationDelay: "0ms" }} />
-                  <span className="size-1.5 rounded-full bg-muted-foreground/50 animate-bounce" style={{ animationDelay: "150ms" }} />
-                  <span className="size-1.5 rounded-full bg-muted-foreground/50 animate-bounce" style={{ animationDelay: "300ms" }} />
+                  {[0, 1, 2].map(i => (
+                    <span key={i} className="size-2 rounded-full bg-muted-foreground/50 animate-bounce" style={{ animationDelay: i * 150 + "ms" }} />
+                  ))}
                 </div>
               </div>
             </div>
           )}
         </div>
-
-        {/* Suggested Questions */}
-        <div className="flex flex-wrap gap-2">
-          {suggestedQuestions.map((q) => (
-            <button
-              key={q}
-              onClick={() => handleSuggestion(q)}
-              className="rounded-full border border-border bg-card px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted/50 hover:text-foreground hover:border-primary/30 transition-colors"
-            >
-              {q}
-            </button>
-          ))}
-        </div>
-
-        {/* Input */}
-        <div className="flex gap-2">
+        <div className="flex gap-2 p-4 border-t">
           <Input
-            placeholder="Ask about your resume..."
+            placeholder="Ask a question..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSend()}
-            className="flex-1"
           />
           <Button size="icon" onClick={handleSend} disabled={!input.trim()}>
             <Send className="size-4" />
-            <span className="sr-only">Send message</span>
           </Button>
         </div>
       </CardContent>
     </Card>
   )
 }
+

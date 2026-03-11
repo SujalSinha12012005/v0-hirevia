@@ -1,7 +1,10 @@
+"use client"
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { CircularProgress } from "@/components/circular-progress"
+import { useAuth } from "@/context/auth-context"
 import {
   BarChart3,
   FileText,
@@ -13,33 +16,41 @@ import {
   AlertCircle,
 } from "lucide-react"
 
-const scores = {
-  resumeQuality: 78,
-  skillCoverage: 65,
-  quizScore: 82,
-  jdMatch: 63,
-}
-
-const overallScore = Math.round(
-  (scores.resumeQuality + scores.skillCoverage + scores.quizScore + scores.jdMatch) / 4
-)
-
-function getReadinessLevel(score: number) {
-  if (score >= 80) return { label: "Placement Ready", color: "bg-success/10 text-success border-success/20" }
-  if (score >= 50) return { label: "Intermediate", color: "bg-warning/10 text-warning border-warning/20" }
-  return { label: "Beginner", color: "bg-destructive/10 text-destructive border-destructive/20" }
-}
-
-const readiness = getReadinessLevel(overallScore)
-
-const tips = [
-  { icon: CheckCircle2, text: "Strong quiz performance - keep practicing!", positive: true },
-  { icon: CheckCircle2, text: "Good resume structure and formatting", positive: true },
-  { icon: AlertCircle, text: "Improve skill coverage by learning TypeScript and testing", positive: false },
-  { icon: AlertCircle, text: "Better align your resume with target JD keywords", positive: false },
-]
-
 export default function PlacementReadinessPage() {
+  const { user } = useAuth()
+  
+  // Get data from auth context - defaults to demo values
+  const resumeScore = user?.resumeData?.score ?? 78
+  const jdMatchScore = user?.resumeData?.lastJDMatch ?? 63
+  const skillCoverage = 65
+  const quizScore = 82
+  
+  const scores = {
+    resumeQuality: resumeScore,
+    skillCoverage: skillCoverage,
+    quizScore: quizScore,
+    jdMatch: jdMatchScore,
+  }
+
+  const overallScore = Math.round(
+    (scores.resumeQuality + scores.skillCoverage + scores.quizScore + scores.jdMatch) / 4
+  )
+
+  function getReadinessLevel(score: number) {
+    if (score >= 80) return { label: "Placement Ready", color: "bg-success/10 text-success border-success/20" }
+    if (score >= 50) return { label: "Intermediate", color: "bg-warning/10 text-warning border-warning/20" }
+    return { label: "Beginner", color: "bg-destructive/10 text-destructive border-destructive/20" }
+  }
+
+  const readiness = getReadinessLevel(overallScore)
+
+  const tips = [
+    { icon: CheckCircle2, text: "Strong quiz performance - keep practicing!", positive: true },
+    { icon: CheckCircle2, text: "Good resume structure and formatting", positive: true },
+    { icon: AlertCircle, text: "Improve skill coverage by learning TypeScript and testing", positive: false },
+    { icon: AlertCircle, text: "Better align your resume with target JD keywords", positive: false },
+  ]
+
   return (
     <div className="flex flex-col gap-8">
       <div>
@@ -228,3 +239,4 @@ function LevelStep({
     </div>
   )
 }
+

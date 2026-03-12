@@ -170,21 +170,8 @@ const howItWorksSteps = [
 export default function LandingPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
+  const [isVisible, setIsVisible] = useState(false)
   const currentYear = new Date().getFullYear()
-  const currentDate = new Date().toLocaleDateString('en-US', { 
-    weekday: 'long', 
-    year: 'numeric', 
-    month: 'long', 
-    day: 'numeric' 
-  })
-
-  // Live stats that would come from backend
-  const liveStats = {
-    studentsActive: 2847,
-    interviewsToday: 156,
-    placementsThisWeek: 89,
-    avgScoreImprovement: 34
-  }
 
   // Handle scroll for header
   useEffect(() => {
@@ -192,6 +179,8 @@ export default function LandingPage() {
       setIsScrolled(window.scrollY > 50)
     }
     window.addEventListener('scroll', handleScroll)
+    // Trigger entrance animations
+    setTimeout(() => setIsVisible(true), 100)
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 

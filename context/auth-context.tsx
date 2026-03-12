@@ -26,6 +26,9 @@ type AuthContextType = {
   isLoading: boolean
   updateResumeData: (resumeData: ResumeData) => void
   addCredits: (amount: number) => void
+  deductCredits: (amount: number) => boolean
+  deductCreditsIfAvailable: (amount: number) => boolean
+  hasEnoughCredits: (amount: number) => boolean
   updateJDMatch: (matchPercentage: number) => void
 }
 
@@ -125,8 +128,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     })
   }
 
+  const hasEnoughCredits = (amount: number): boolean => {
+    const currentCredits = user?.credits || 0
+    return currentCredits >= amount
+  }
+
+  const deductCredits = (amount: number): boolean => {
+    const currentCredits = user?.credits || 0
+    if (currentCredits >= amount) {
+      setUser(prevUser => {
+        if (prevUser) {
+          const updatedUser = { ...prevUser, credits: currentCredits - amount }
+          localStorage.setItem("hirevia_user", JSON.stringify(updatedUser))
+          return updatedUser
+        }
+        return prevUser
+      })
+      return true
+    }
+    return false
+  }
+
+  const deductCreditsIfAvailable = (amount: number): boolean => {
+    return deductCredits(amount)
+  }
+
   return (
-    <AuthContext.Provider value={{ user, login, logout, isLoading, updateResumeData, addCredits, updateJDMatch }}>
+    <AuthContext.Provider value={{ user, login, logout, isLoading, updateResumeData, addCredits, deductCredits, deductCreditsIfAvailable, hasEnoughCredits, updateJDMatch }}>
       {children}
     </AuthContext.Provider>
   )

@@ -41,10 +41,14 @@ export async function POST(request: NextRequest) {
       }
     )
 
-    if (!response.ok) {
-      throw new Error("Gemini API request failed")
-    }
-
+    // Replace your lines 44-46 with this:
+if (!response.ok) {
+  const errorText = await response.text(); // Get the raw error message
+  console.error("Google API Error Details:", errorText);
+  return new Response(JSON.stringify({ error: "Gemini API failed", details: errorText }), {
+    status: response.status,
+  });
+}
     const data = await response.json()
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text
     

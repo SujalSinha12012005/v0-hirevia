@@ -16,6 +16,7 @@ import {
   GraduationCap,
   Mic,
   Menu,
+  LineChart,
 } from "lucide-react"
 import { Lock } from "lucide-react"
 import { useIsMobile } from "@/hooks/use-mobile"
@@ -24,16 +25,17 @@ import { Button } from "@/components/ui/button"
 
 const mainNav = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { label: "Analytics", href: "/dashboard/analytics", icon: LineChart },
   { label: "Resume Analysis", href: "/dashboard/resume", icon: FileText },
   { label: "JD Match", href: "/dashboard/jd-match", icon: Briefcase },
-  { label: "Skill Roadmap", href: "/dashboard/roadmap", icon: Map },
+  // { label: "Skill Roadmap", href: "/dashboard/roadmap", icon: Map },
   { label: "Quizzes", href: "/dashboard/quizzes", icon: Brain },
   { label: "Placement Readiness", href: "/dashboard/readiness", icon: BarChart3 },
 ]
 
 const premiumNav = [
   { label: "Career Counselling", href: "/dashboard/counselling", icon: GraduationCap },
-  { label: "Interview Prep", href: "/dashboard/interview", icon: Mic },
+  // { label: "Interview Prep", href: "/dashboard/interview", icon: Mic },
 ]
 
 const bottomNav = [

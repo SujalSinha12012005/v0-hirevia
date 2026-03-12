@@ -3,6 +3,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { CircularProgress } from "@/components/circular-progress"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import Link from "next/link"
 import { 
   FileText, 
   Wallet, 
@@ -15,7 +17,13 @@ import {
   Target,
   Zap,
   Award,
-  Activity
+  Activity,
+  ArrowRight,
+  Sparkles,
+  LineChart,
+  CheckCircle2,
+  BookOpen,
+  Code2
 } from "lucide-react"
 import { Progress } from "@/components/ui/progress"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
@@ -39,11 +47,19 @@ export default function DashboardPage() {
     ? new Date(user.resumeData.lastAnalyzed).toLocaleDateString()
     : "Never"
 
+  // Quick actions data
+  const quickActions = [
+    { label: "Analyze Resume", href: "/dashboard/resume", icon: FileText, color: "bg-blue-500/10 text-blue-600", border: "border-blue-500/20" },
+    { label: "JD Match", href: "/dashboard/jd-match", icon: Target, color: "bg-emerald-500/10 text-emerald-600", border: "border-emerald-500/20" },
+    { label: "Analytics", href: "/dashboard/analytics", icon: LineChart, color: "bg-purple-500/10 text-purple-600", border: "border-purple-500/20" },
+    { label: "Practice Coding", href: "/dashboard/coding", icon: Code2, color: "bg-orange-500/10 text-orange-600", border: "border-orange-500/20" },
+  ]
+
   return (
     <div className="flex flex-col gap-8">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
+        <div className="animate-fade-in-up">
           <h1 className="text-3xl font-bold tracking-tight text-foreground">
             Welcome back, <span className="text-primary">Arjun</span>
           </h1>
@@ -53,16 +69,36 @@ export default function DashboardPage() {
         </div>
         
         {/* Quick Stats Row */}
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-success/10 border border-success/20">
-            <TrendingUp className="size-4 text-success" />
+        <div className="flex items-center gap-3 animate-fade-in-up delay-200">
+          <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-success/10 border border-success/20 hover:shadow-md transition-shadow">
+            <TrendingUp className="size-4 text-success animate-bounce-gentle" />
             <span className="text-sm font-medium text-success">+12%</span>
           </div>
-          <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-muted/50 border border-border">
+          <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-muted/50 border border-border hover:shadow-md transition-shadow">
             <Activity className="size-4 text-muted-foreground" />
             <span className="text-sm font-medium text-muted-foreground">Active</span>
           </div>
         </div>
+      </div>
+
+      {/* Quick Actions */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 animate-fade-in-up delay-300">
+        {quickActions.map((action, index) => (
+          <Link key={action.label} href={action.href}>
+            <Card className={`cursor-pointer hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border-2 ${action.border}`}>
+              <CardContent className="flex items-center gap-4 p-4">
+                <div className={`flex items-center justify-center size-12 rounded-xl ${action.color}`}>
+                  <action.icon className="size-6" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-semibold text-sm">{action.label}</p>
+                  <p className="text-xs text-muted-foreground">Get started</p>
+                </div>
+                <ArrowRight className="size-4 text-muted-foreground" />
+              </CardContent>
+            </Card>
+          </Link>
+        ))}
       </div>
 
       {/* Three Core Metrics - Enterprise Cards */}

@@ -67,7 +67,7 @@ type AnalysisData = {
 }
 
 export default function ResumeAnalysisPage() {
-  const { updateResumeData, addCredits } = useAuth()
+  const { updateResumeData, addCredits, hasEnoughCredits, deductCredits, user } = useAuth()
   const [file, setFile] = useState<File | null>(null)
   const [showResults, setShowResults] = useState(false)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
@@ -110,6 +110,20 @@ export default function ResumeAnalysisPage() {
 
   async function handleAnalyze() {
     if (!file) return
+    
+    // Check if user has enough credits (10 credits required)
+    const RESUME_ANALYSIS_COST = 10
+    if (!hasEnoughCredits(RESUME_ANALYSIS_COST)) {
+      setError(`Insufficient credits. You need ${RESUME_ANALYSIS_COST} credits to analyze a resume. Please buy more credits.`)
+      return
+    }
+    
+    // Deduct credits before analysis
+    if (!deductCredits(RESUME_ANALYSIS_COST)) {
+      setError("Failed to deduct credits. Please try again.")
+      return
+    }
+    
     setIsAnalyzing(true)
     setError(null)
     try {
@@ -307,10 +321,16 @@ export default function ResumeAnalysisPage() {
                 ) : (
                   <>
                     <Sparkles className="size-5 mr-2" />
-                    Analyze Resume
+                    Analyze Resume (10 Credits)
                   </>
                 )}
               </Button>
+
+              {/* Credit Balance Info */}
+              <div className="flex items-center justify-center gap-2 mt-2 text-sm text-muted-foreground">
+                <span>Your balance:</span>
+                <span className="font-semibold text-foreground">{user?.credits || 0} credits</span>
+              </div>
 
               {/* Tips */}
               <div className="flex items-start gap-3 mt-4 p-4 rounded-lg bg-primary/5 border border-primary/10">

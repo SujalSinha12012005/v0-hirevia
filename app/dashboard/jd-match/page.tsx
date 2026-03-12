@@ -232,10 +232,14 @@ function calculateMatchFromResume(resumeData: { score: number; missingSkills?: s
 }
 
 export default function JDMatchPage() {
-  const { user, updateJDMatch } = useAuth()
+  const { user, updateJDMatch, hasEnoughCredits, deductCredits } = useAuth()
   const [jobDescription, setJobDescription] = useState("")
   const [showResults, setShowResults] = useState(false)
   const [isMatching, setIsMatching] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  // JD Match cost
+  const JD_MATCH_COST = 5
 
   // Get actual resume data from auth context
   const resumeData = user?.resumeData
@@ -250,6 +254,20 @@ export default function JDMatchPage() {
 
   function handleMatch() {
     if (!jobDescription.trim()) return
+    
+    // Check if user has enough credits (5 credits required for JD match)
+    if (!hasEnoughCredits(JD_MATCH_COST)) {
+      setError(`Insufficient credits. You need ${JD_MATCH_COST} credits to match your resume. Please buy more credits.`)
+      return
+    }
+    
+    // Deduct credits before matching
+    if (!deductCredits(JD_MATCH_COST)) {
+      setError("Failed to deduct credits. Please try again.")
+      return
+    }
+    
+    setError(null)
     setIsMatching(true)
     setTimeout(() => {
       setIsMatching(false)
@@ -354,8 +372,22 @@ export default function JDMatchPage() {
             className="w-full sm:w-auto sm:self-end"
           >
             <Sparkles className="size-4" />
-            {isMatching ? "Matching..." : "Match Resume"}
+            {isMatching ? "Matching..." : `Match Resume (${JD_MATCH_COST} Credits)`}
           </Button>
+          
+          {/* Error Message */}
+          {error && (
+            <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
+              <AlertCircle className="size-4" />
+              {error}
+            </div>
+          )}
+          
+          {/* Credit Balance Info */}
+          <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+            <span>Your balance:</span>
+            <span className="font-semibold text-foreground">{user?.credits || 0} credits</span>
+          </div>
         </CardContent>
       </Card>
 

@@ -152,15 +152,7 @@ export default function LoginPage() {
                 <GraduationCap className="size-4 mr-2" />
                 Student Demo
               </Button>
-              <Button
-                variant="outline"
-                onClick={() => handleDemoLogin("admin")}
-                disabled={isSubmitting}
-                className="w-full"
-              >
-                <Sparkles className="size-4 mr-2" />
-                Admin Demo
-              </Button>
+             
             </div>
 
             <div className="mt-6 p-4 rounded-lg bg-muted/50 text-xs space-y-2">

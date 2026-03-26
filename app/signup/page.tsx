@@ -160,6 +160,7 @@ export default async function SignupPage({
             className="space-y-4"
             action={async (formData) => {
               'use server'
+              const name = formData.get('full_name') as string
               const email = formData.get('email') as string
               const password = formData.get('password') as string
               const sbase = await createClient()
@@ -168,6 +169,9 @@ export default async function SignupPage({
                 password,
                 options: {
                   emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'}/auth/callback`,
+                  data: {
+                    full_name: name
+                  }
                 },
               })
               if (error) {
@@ -176,6 +180,17 @@ export default async function SignupPage({
               return redirect('/signup?message=Check email to continue sign in process')
             }}
           >
+            <div className="space-y-1.5">
+              <Label htmlFor="full_name" className="text-sm font-medium">Full Name</Label>
+              <Input
+                id="full_name"
+                name="full_name"
+                type="text"
+                placeholder="John Doe"
+                required
+                className="h-11 rounded-xl border-border/80 bg-card focus:border-primary transition-colors"
+              />
+            </div>
             <div className="space-y-1.5">
               <Label htmlFor="email" className="text-sm font-medium">Email</Label>
               <Input

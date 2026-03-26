@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -17,6 +17,7 @@ import {
   Code2,
   Cloud,
   BarChart3,
+  FileText,
 } from "lucide-react"
 
 const suggestedRoles = [
@@ -159,19 +160,87 @@ function getMatchLabel(pct: number) {
   return { text: "Low Match", color: "text-destructive" }
 }
 
+function calculateDynamicMatch(jdText: string, resumeData: any): MatchResult {
+  const jd = jdText.toLowerCase()
+  const resumeSkills = [
+    ...(resumeData.missingSkills || []),
+    resumeData.bestFitRole,
+    "JavaScript", "HTML", "CSS", "Git", "React", "Node.js"
+  ].map(s => s.toLowerCase())
+
+  const jdKeywords = [
+    "typescript", "redux", "aws", "docker", "kubernetes", "testing", "jest",
+    "graphql", "microservices", "mongodb", "postgresql", "sql", "python",
+    "tensorflow", "machine learning", "cyber security", "cloud", "agile"
+  ]
+
+  const matchedKeywords: string[] = []
+  const missingKeywords: string[] = []
+
+  jdKeywords.forEach(kw => {
+    const isRequired = jd.includes(kw)
+    if (isRequired) {
+      if (resumeSkills.some(rs => rs.includes(kw))) {
+        matchedKeywords.push(kw.charAt(0).toUpperCase() + kw.slice(1))
+      } else {
+        missingKeywords.push(kw.charAt(0).toUpperCase() + kw.slice(1))
+      }
+    }
+  })
+
+  // Base score calculation
+  let score = 40 
+  if (matchedKeywords.length > 0) {
+    score += (matchedKeywords.length / (matchedKeywords.length + missingKeywords.length)) * 50
+  }
+  
+  if (jd.includes(resumeData.bestFitRole.toLowerCase().split(" ")[0])) {
+    score += 10
+  }
+
+  score = Math.min(Math.round(score), 98)
+
+  return {
+    matchPercentage: score,
+    matchedKeywords: matchedKeywords.length > 0 ? matchedKeywords : ["General Skills"],
+    missingKeywords: missingKeywords.length > 0 ? missingKeywords : ["Specific Domain Skills"],
+    tips: [
+      `Your resume is a ${score}% match for this JD.`,
+      missingKeywords.length > 0 
+        ? `Focus on adding ${missingKeywords.slice(0, 2).join(" and ")} to your profile.`
+        : "You have most of the key skills! Focus on quantifying your experience.",
+      "Tailor your project descriptions to mirror the language in this JD.",
+    ]
+  }
+}
+
 export default function JDMatchPage() {
   const [jobDescription, setJobDescription] = useState("")
   const [showResults, setShowResults] = useState(false)
   const [isMatching, setIsMatching] = useState(false)
+  const [resumeAnalysis, setResumeAnalysis] = useState<any>(null)
+  const [customMatchData, setCustomMatchData] = useState<MatchResult | null>(null)
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("latest_resume_analysis")
+      if (stored) {
+        setResumeAnalysis(JSON.parse(stored))
+      }
+    }
+  }, [])
 
   const selectedRole = getSelectedRole(jobDescription)
-  const matchData = selectedRole && roleMatchData[selectedRole] ? roleMatchData[selectedRole] : defaultMatch
+  const matchData = customMatchData || (selectedRole && roleMatchData[selectedRole] ? roleMatchData[selectedRole] : defaultMatch)
   const matchLabel = getMatchLabel(matchData.matchPercentage)
 
   function handleMatch() {
     if (!jobDescription.trim()) return
     setIsMatching(true)
     setTimeout(() => {
+      if (resumeAnalysis) {
+        setCustomMatchData(calculateDynamicMatch(jobDescription, resumeAnalysis))
+      }
       setIsMatching(false)
       setShowResults(true)
     }, 1500)
@@ -180,12 +249,22 @@ export default function JDMatchPage() {
   return (
     <div className="flex flex-col gap-8">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">
-          JD Match
-        </h1>
-        <p className="text-muted-foreground mt-1">
-          Paste a job description to see how well your resume matches.
-        </p>
+        <div className="flex items-center justify-between gap-4 flex-wrap">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">
+              JD Match
+            </h1>
+            <p className="text-muted-foreground mt-1">
+              Paste a job description to see how well your resume matches.
+            </p>
+          </div>
+          {resumeAnalysis && (
+            <Badge variant="outline" className="h-9 px-4 gap-2 bg-success/5 border-success/20 text-success rounded-full">
+              <FileText className="size-3.5" />
+              Matching against: {resumeAnalysis.filename}
+            </Badge>
+          )}
+        </div>
       </div>
 
       {/* Input Section */}

@@ -20,34 +20,83 @@ import {
   User,
 } from "lucide-react"
 
-const mockAnalysis = {
-  score: 78,
-  bestFitRole: "MERN Stack Developer",
-  missingSkills: [
-    "TypeScript advanced patterns",
-    "System Design basics",
-    "Testing (Jest/Vitest)",
-    "CI/CD fundamentals",
-  ],
-  suggestions: [
+// Simple string hash function to generate consistent pseudo-random numbers
+function hashString(str: string): number {
+  let hash = 0
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i)
+    hash = (hash << 5) - hash + char
+    hash = hash & hash // Convert to 32bit integer
+  }
+  return Math.abs(hash)
+}
+
+function generateDynamicAnalysis(filename: string | null) {
+  if (!filename) return null;
+  
+  const h = hashString(filename.toLowerCase());
+  
+  // Base score between 55 and 98
+  const score = 55 + (h % 44);
+  
+  const roles = [
+    "MERN Stack Developer", "Frontend Engineer", "Backend Developer", 
+    "Full Stack Developer", "React Developer", "Node.js Developer"
+  ];
+  const bestFitRole = roles[h % roles.length];
+  
+  const allSkills = [
+    "TypeScript advanced patterns", "System Design basics", "Testing (Jest/Vitest)",
+    "CI/CD fundamentals", "GraphQL configuration", "Microservices architecture",
+    "MongoDB Aggregation Pipeline", "Docker & Kubernetes", "AWS Lambda",
+    "TailwindCSS architecture", "WebSockets / Socket.io", "React Performance Optimization"
+  ];
+  
+  // Pick 3-4 random missing skills based on the hash
+  const missingSkillsCount = 3 + (h % 2);
+  const missingSkills = [];
+  for (let i = 0; i < missingSkillsCount; i++) {
+    missingSkills.push(allSkills[(h + i) % allSkills.length]);
+  }
+  
+  const allSuggestions = [
     "Add a professional summary at the top of your resume",
     "Quantify your project achievements (e.g., improved load time by 40%)",
     "Include links to your GitHub and portfolio",
-    "List relevant certifications",
-  ],
-  creditsEarned: 10,
+    "List relevant certifications and hackathons",
+    "Ensure your bullet points start with strong action verbs",
+    "Tailor your skills section to match exact keywords in JD",
+    "Remove outdated technologies from your core stack list",
+    "Add a dedicated section for open-source contributions"
+  ];
+  
+  const suggestionsCount = 3 + (h % 3);
+  const suggestions = [];
+  for (let i = 0; i < suggestionsCount; i++) {
+    suggestions.push(allSuggestions[(h + i * 2) % allSuggestions.length]);
+  }
+
+  return {
+    score,
+    bestFitRole,
+    missingSkills,
+    suggestions,
+    creditsEarned: 10 + (score % 5),
+  }
 }
 
 export default function ResumeAnalysisPage() {
   const [fileName, setFileName] = useState<string | null>(null)
   const [showResults, setShowResults] = useState(false)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
+  const [currentAnalysis, setCurrentAnalysis] = useState<ReturnType<typeof generateDynamicAnalysis>>(null)
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (file) {
       setFileName(file.name)
       setShowResults(false)
+      setCurrentAnalysis(null)
     }
   }
 
@@ -55,6 +104,15 @@ export default function ResumeAnalysisPage() {
     if (!fileName) return
     setIsAnalyzing(true)
     setTimeout(() => {
+      const generated = generateDynamicAnalysis(fileName)
+      setCurrentAnalysis(generated)
+      if (generated) {
+        localStorage.setItem('latest_resume_analysis', JSON.stringify({
+          ...generated,
+          filename: fileName,
+          timestamp: new Date().toISOString()
+        }))
+      }
       setIsAnalyzing(false)
       setShowResults(true)
     }, 1500)
@@ -127,7 +185,7 @@ export default function ResumeAnalysisPage() {
             <p className="text-sm font-medium text-foreground">
               You earned{" "}
               <span className="font-bold text-success">
-                {mockAnalysis.creditsEarned} credits
+                {currentAnalysis!.creditsEarned} credits
               </span>{" "}
               for analyzing your resume!
             </p>
@@ -160,21 +218,21 @@ export default function ResumeAnalysisPage() {
                       strokeDasharray={2 * Math.PI * 65}
                       strokeDashoffset={
                         2 * Math.PI * 65 -
-                        (mockAnalysis.score / 100) * 2 * Math.PI * 65
+                        (currentAnalysis!.score / 100) * 2 * Math.PI * 65
                       }
                       className="stroke-primary transition-all duration-700"
                     />
                   </svg>
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
                     <span className="text-3xl font-bold text-foreground">
-                      {mockAnalysis.score}
+                      {currentAnalysis!.score}
                     </span>
                     <span className="text-xs text-muted-foreground">out of 100</span>
                   </div>
                 </div>
                 <div className="text-center">
                   <p className="text-sm font-medium text-foreground">Best Fit Role</p>
-                  <Badge className="mt-1">{mockAnalysis.bestFitRole}</Badge>
+                  <Badge className="mt-1">{currentAnalysis!.bestFitRole}</Badge>
                 </div>
               </CardContent>
             </Card>
@@ -189,7 +247,7 @@ export default function ResumeAnalysisPage() {
               </CardHeader>
               <CardContent>
                 <ul className="flex flex-col gap-3">
-                  {mockAnalysis.missingSkills.map((skill) => (
+                  {currentAnalysis!.missingSkills.map((skill) => (
                     <li key={skill} className="flex items-center gap-3">
                       <div className="flex items-center justify-center size-6 rounded-full bg-destructive/10">
                         <AlertCircle className="size-3.5 text-destructive" />
@@ -212,7 +270,7 @@ export default function ResumeAnalysisPage() {
             </CardHeader>
             <CardContent>
               <ul className="flex flex-col gap-3">
-                {mockAnalysis.suggestions.map((suggestion, i) => (
+                {currentAnalysis!.suggestions.map((suggestion, i) => (
                   <li key={i} className="flex items-start gap-3">
                     <CheckCircle2 className="size-5 mt-0.5 shrink-0 text-primary" />
                     <span className="text-sm text-foreground">{suggestion}</span>

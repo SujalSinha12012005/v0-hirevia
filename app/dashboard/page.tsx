@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import { createClient } from "@/lib/supabase/client"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { CircularProgress } from "@/components/circular-progress"
 import { Badge } from "@/components/ui/badge"
@@ -16,6 +17,19 @@ const plans = [
 ]
 
 export default function DashboardPage() {
+  const [user, setUser] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+  const supabase = createClient()
+
+  useEffect(() => {
+    async function getUser() {
+      const { data: { user } } = await supabase.auth.getUser()
+      setUser(user)
+      setLoading(false)
+    }
+    getUser()
+  }, [])
+
   const resumeScore = 78
   const creditBalance = 145
   const readinessIndex = 72
@@ -27,7 +41,11 @@ export default function DashboardPage() {
       <div className="flex items-start justify-between gap-8">
         <div className="pt-1">
           <h1 className="text-2xl font-bold tracking-tight text-foreground">
-            Welcome back, Arjun
+            {loading ? (
+              <span className="inline-block w-48 h-8 bg-muted animate-pulse rounded-md" />
+            ) : (
+              <>Welcome back, {user?.user_metadata?.full_name?.split(" ")[0] || "User"}</>
+            )}
           </h1>
           <p className="text-muted-foreground mt-1">
             {"Here's how you're tracking today."}

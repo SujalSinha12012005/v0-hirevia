@@ -17,9 +17,11 @@ import {
   GraduationCap,
   Mic,
   LogOut,
+  Lock,
 } from "lucide-react"
-
-import { Lock } from "lucide-react"
+import { createClient } from "@/lib/supabase/client"
+import { useEffect, useState } from "react"
+import type { User as SupabaseUser } from "@supabase/supabase-js"
 
 const mainNav = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -42,6 +44,18 @@ const bottomNav = [
 
 export function AppSidebar() {
   const pathname = usePathname()
+  const [user, setUser] = useState<SupabaseUser | null>(null)
+  const [loading, setLoading] = useState(true)
+  const supabase = createClient()
+
+  useEffect(() => {
+    async function getUser() {
+      const { data: { user } } = await supabase.auth.getUser()
+      setUser(user)
+      setLoading(false)
+    }
+    getUser()
+  }, [])
 
   return (
     <aside className="flex h-screen w-64 flex-col bg-sidebar text-sidebar-foreground border-r border-sidebar-border shrink-0">
@@ -102,10 +116,9 @@ export function AppSidebar() {
             })}
           </ul>
         </div>
-
       </nav>
 
-      {/* Premium Section - pinned above profile, always visible */}
+      {/* Premium Section */}
       <div className="px-3 pb-2 border-t border-sidebar-border pt-3">
         <span className="flex items-center gap-1.5 px-3 mb-2 text-[10px] font-semibold uppercase tracking-widest text-sidebar-foreground/40">
           <Lock className="size-3" />
@@ -137,25 +150,40 @@ export function AppSidebar() {
         </ul>
       </div>
 
+      {/* User Profile Section */}
       <div className="border-t border-sidebar-border px-4 py-4">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center justify-center size-9 rounded-full bg-sidebar-accent text-sm font-semibold">
-            AJ
+        {loading ? (
+          <div className="flex items-center gap-3 animate-pulse">
+            <div className="size-9 rounded-full bg-sidebar-accent" />
+            <div className="flex flex-col gap-1.5 flex-1">
+              <div className="h-3 w-20 bg-sidebar-accent rounded" />
+              <div className="h-2 w-24 bg-sidebar-accent rounded" />
+            </div>
           </div>
-          <div className="flex flex-col flex-1">
-            <span className="text-sm font-medium">Arjun Mehta</span>
-            <span className="text-xs text-sidebar-foreground/50">Student</span>
+        ) : (
+          <div className="flex items-center gap-3">
+            <div className="flex items-center justify-center size-9 rounded-full bg-sidebar-accent text-sm font-semibold text-primary">
+              {user?.user_metadata?.full_name?.[0] || user?.email?.[0]?.toUpperCase() || "U"}
+            </div>
+            <div className="flex flex-col flex-1 overflow-hidden">
+              <span className="text-sm font-medium truncate">
+                {user?.user_metadata?.full_name || "User"}
+              </span>
+              <span className="text-[10px] text-sidebar-foreground/50 truncate">
+                {user?.email}
+              </span>
+            </div>
+            <form action={signOut}>
+              <button
+                type="submit"
+                className="p-2 hover:bg-sidebar-accent rounded-full text-sidebar-foreground/70 hover:text-sidebar-foreground transition-colors"
+                title="Log Out"
+              >
+                <LogOut className="size-4" />
+              </button>
+            </form>
           </div>
-          <form action={signOut}>
-            <button
-              type="submit"
-              className="p-2 hover:bg-sidebar-accent rounded-full text-sidebar-foreground/70 hover:text-sidebar-foreground transition-colors"
-              title="Log Out"
-            >
-              <LogOut className="size-4" />
-            </button>
-          </form>
-        </div>
+        )}
       </div>
     </aside>
   )

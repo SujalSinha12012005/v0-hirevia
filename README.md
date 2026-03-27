@@ -1,35 +1,74 @@
-# v0-hirevia
+# HireVia - AI-Powered Career Growth & Recruitment Platform
 
-This is a [Next.js](https://nextjs.org) project bootstrapped with [v0](https://v0.app).
+HireVia is a comprehensive, AI-driven platform designed to empower job seekers and streamline the recruitment process. Built with modern web technologies, it offers a suite of tools from professional resume building to job readiness assessments.
 
-## Built with v0
+## 🚀 Key Features
 
-This repository is linked to a [v0](https://v0.app) project. You can continue developing by visiting the link below -- start new chats to make changes, and v0 will push commits directly to this repo. Every merge to `main` will automatically deploy.
+- **📄 AI Resume Builder**: Create professional, ATS-friendly resumes with ease.
+- **🎯 JD Match**: Match your resume against Job Descriptions using AI to identify gaps and optimize for success.
+- **🎙️ Interview Preparation**: Simulate real-world interview scenarios with skill-based AI simulations.
+- **🗺️ Career Roadmap**: Plan your professional journey with personalized, AI-generated career paths.
+- **🧠 Knowledge Quizzes**: Assess your skills with interactive quizzes across various domains.
+- **✅ Job Readiness Assessment**: Gauge your readiness for the job market with comprehensive evaluations.
+- **🤝 Career Counselling**: Access integrated career guidance to navigate your professional growth.
 
-[Continue working on v0 →](https://v0.app/chat/projects/prj_znXLZKkzHLe0IQwSO1GL2YhHVnpx)
+## 🛠️ Built With
 
-## Getting Started
+HireVia is built using a modern and scalable tech stack:
 
-First, run the development server:
+- **Framework**: [Next.js 15](https://nextjs.org) (App Router)
+- **UI & Styling**: [Tailwind CSS](https://tailwindcss.com), [Lucide React](https://lucide.dev), [Radix UI](https://www.radix-ui.com)
+- **Backend & Auth**: [Supabase](https://supabase.com) (Authentication & Database)
+- **State & Forms**: [React Hook Form](https://react-hook-form.com), [Zod](https://zod.dev)
+- **Data Visualization**: [Recharts](https://recharts.org)
+- **Notifications**: [Sonner](https://sonner.stevenly.me)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-```
+## 🏁 Getting Started
+
+### Prerequisites
+
+- Node.js (Latest LTS recommended)
+- A Supabase project and environment variables
+
+### Installation
+
+1. Clone the repository:
+   ```bash
+   git clone <repository-url>
+   cd hirevia
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Set up environment variables:
+   Create a `.env.local` file in the root directory and add your Supabase credentials:
+   ```env
+   NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+   ```
+
+4. Run the development server:
+   ```bash
+   npm run dev
+   ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 📄 Learn More
 
-## Learn More
+To learn more about the technologies used in this project, check out these resources:
 
-To learn more, take a look at the following resources:
+- [Next.js Documentation](https://nextjs.org/docs)
+- [Supabase Documentation](https://supabase.com/docs)
+- [Tailwind CSS Documentation](https://tailwindcss.com/docs)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-- [v0 Documentation](https://v0.app/docs) - learn about v0 and how to use it.
+---
 
-<a href="https://v0.app/chat/api/kiro/clone/SujalSinha12012005/v0-hirevia" alt="Open in Kiro"><img src="https://pdgvvgmkdvyeydso.public.blob.vercel-storage.com/open%20in%20kiro.svg?sanitize=true" /></a>
+<div align="center">
+  <a href="https://v0.app/chat/api/kiro/clone/SujalSinha12012005/v0-hirevia" alt="Open in Kiro">
+    <img src="https://pdgvvgmkdvyeydso.public.blob.vercel-storage.com/open%20in%20kiro.svg?sanitize=true" width="200" />
+  </a>
+</div>

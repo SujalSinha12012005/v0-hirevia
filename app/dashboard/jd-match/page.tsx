@@ -20,6 +20,7 @@ import {
   FileText,
 } from "lucide-react"
 import { useFeatureWithCredits } from "@/app/actions/credits"
+import { getLatestResumeAnalysis } from "@/app/actions/resume"
 import { toast } from "sonner"
 
 const suggestedRoles = [
@@ -164,11 +165,14 @@ function getMatchLabel(pct: number) {
 
 function calculateDynamicMatch(jdText: string, resumeData: any): MatchResult {
   const jd = jdText.toLowerCase()
+  const bestFit = resumeData.best_fit_role || resumeData.bestFitRole || ""
+  const missing = resumeData.missing_skills || resumeData.missingSkills || []
+  
   const resumeSkills = [
-    ...(resumeData.missingSkills || []),
-    resumeData.bestFitRole,
+    ...missing,
+    bestFit,
     "JavaScript", "HTML", "CSS", "Git", "React", "Node.js"
-  ].map(s => s.toLowerCase())
+  ].filter(Boolean).map(s => String(s).toLowerCase())
 
   const jdKeywords = [
     "typescript", "redux", "aws", "docker", "kubernetes", "testing", "jest",
@@ -196,7 +200,7 @@ function calculateDynamicMatch(jdText: string, resumeData: any): MatchResult {
     score += (matchedKeywords.length / (matchedKeywords.length + missingKeywords.length)) * 50
   }
   
-  if (jd.includes(resumeData.bestFitRole.toLowerCase().split(" ")[0])) {
+  if (bestFit && jd.includes(bestFit.toLowerCase().split(" ")[0])) {
     score += 10
   }
 
@@ -224,12 +228,13 @@ export default function JDMatchPage() {
   const [customMatchData, setCustomMatchData] = useState<MatchResult | null>(null)
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const stored = localStorage.getItem("latest_resume_analysis")
+    async function loadResume() {
+      const stored = await getLatestResumeAnalysis()
       if (stored) {
-        setResumeAnalysis(JSON.parse(stored))
+        setResumeAnalysis(stored)
       }
     }
+    loadResume()
   }, [])
 
   const selectedRole = getSelectedRole(jobDescription)

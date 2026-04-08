@@ -34,3 +34,31 @@ export async function signOut() {
   await supabase.auth.signOut()
   return redirect('/')
 }
+
+export async function resetPasswordForEmail(email: string) {
+  const supabase = await createClient()
+  const headersList = await headers()
+  const host = headersList.get('x-forwarded-host') || headersList.get('host') || 'localhost:3000'
+  const protocol = headersList.get('x-forwarded-proto') || 'http'
+  const origin = `${protocol}://${host}`
+  
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${origin}/auth/callback?next=/reset-password`,
+  })
+
+  if (error) {
+    return { error: error.message }
+  }
+  return { success: true }
+}
+export async function updatePassword(password: string) {
+  const supabase = await createClient()
+  const { error } = await supabase.auth.updateUser({
+    password: password
+  })
+  
+  if (error) {
+    return { error: error.message }
+  }
+  return { success: true }
+}

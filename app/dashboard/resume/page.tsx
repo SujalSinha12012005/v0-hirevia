@@ -22,6 +22,7 @@ import {
   User,
 } from "lucide-react"
 import { generateResumeChatResponse } from "@/app/actions/gemini"
+import { saveResumeAnalysis, getLatestResumeAnalysis } from "@/app/actions/resume"
 
 // Simple string hash function to generate consistent pseudo-random numbers
 function hashString(str: string): number {
@@ -93,6 +94,23 @@ export default function ResumeAnalysisPage() {
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [currentAnalysis, setCurrentAnalysis] = useState<ReturnType<typeof generateDynamicAnalysis>>(null)
 
+  useEffect(() => {
+    async function loadLatest() {
+      const latest = await getLatestResumeAnalysis()
+      if (latest) {
+        setFileName(latest.filename || "Previous Resume")
+        setCurrentAnalysis({
+          score: latest.score,
+          bestFitRole: latest.best_fit_role,
+          missingSkills: latest.missing_skills,
+          suggestions: latest.suggestions
+        })
+        setShowResults(true)
+      }
+    }
+    loadLatest()
+  }, [])
+
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (file) {
@@ -115,15 +133,17 @@ export default function ResumeAnalysisPage() {
       return
     }
 
-    setTimeout(() => {
+    setTimeout(async () => {
       const generated = generateDynamicAnalysis(fileName)
       setCurrentAnalysis(generated)
       if (generated) {
-        localStorage.setItem('latest_resume_analysis', JSON.stringify({
-          ...generated,
-          filename: fileName,
-          timestamp: new Date().toISOString()
-        }))
+        await saveResumeAnalysis({
+          score: generated.score,
+          best_fit_role: generated.bestFitRole,
+          missing_skills: generated.missingSkills,
+          suggestions: generated.suggestions,
+          filename: fileName
+        })
       }
       setIsAnalyzing(false)
       setShowResults(true)
@@ -295,7 +315,7 @@ export default function ResumeAnalysisPage() {
           </Card>
 
           {/* Resume Chatbot */}
-          <ResumeChat />
+          <ResumeChat analysis={currentAnalysis!} />
         </div>
       )}
     </div>
@@ -323,11 +343,11 @@ const suggestedQuestions = [
   "How do I highlight my skills?",
 ]
 
-function ResumeChat() {
+function ResumeChat({ analysis }: { analysis: any }) {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "bot",
-      text: "Hi! I've reviewed your resume. Your score is 78/100 -- solid foundation but room to grow. Ask me anything about improving your CV, what skills to highlight, or how to tailor it for MERN roles.",
+      text: `Hi! I've analyzed your resume and it scored the following: ${analysis.score}/100. It looks like you're aiming for a ${analysis.bestFitRole} role. How can I help you improve it today?`,
     },
   ])
   const [input, setInput] = useState("")
@@ -422,7 +442,7 @@ function ResumeChat() {
                     : "bg-primary text-primary-foreground"
                 }`}
               >
-                <p className={`text-sm leading-relaxed ${msg.role === "bot" ? "text-foreground" : ""}`}>
+                <p className={`whitespace-pre-wrap text-sm leading-relaxed ${msg.role === "bot" ? "text-foreground" : ""}`}>
                   {msg.text}
                 </p>
               </div>

@@ -10,6 +10,7 @@ import { FileText, Wallet, BarChart3, Check, Crown, Flame, CalendarDays, Sparkle
 import { Progress } from "@/components/ui/progress"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { getUserCredits } from "@/app/actions/credits"
+import { getLatestResumeAnalysis } from "@/app/actions/resume"
 
 const plans = [
   { name: "1 Month", price: 100, per: "/mo", save: null, features: ["Resume Analysis", "10 JD Matches", "Basic Quizzes"] },
@@ -45,15 +46,12 @@ export default function DashboardPage() {
         const spent = history.reduce((acc, curr) => curr.type === "spent" ? acc + curr.amount : acc, 0)
         setCreditsUsed(spent)
         
-        // Fetch Resume Score from LocalStorage
-        const localResumeStr = localStorage.getItem('latest_resume_analysis')
+        // Fetch Live Resume Score from Database
+        const latestResume = await getLatestResumeAnalysis()
         let rScore = 0
-        if (localResumeStr) {
-          try {
-            const parsed = JSON.parse(localResumeStr)
-            rScore = parsed.score || 0
-            setResumeScore(rScore)
-          } catch(e) {}
+        if (latestResume) {
+          rScore = latestResume.score || 0
+          setResumeScore(rScore)
         }
         
         // Calculate dynamic readiness index (0-100)

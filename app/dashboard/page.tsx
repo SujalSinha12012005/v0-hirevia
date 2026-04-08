@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { FileText, Wallet, BarChart3, Check, Crown, Flame, CalendarDays, Sparkles, Trophy, Clock, Zap, BookOpen, Lightbulb } from "lucide-react"
 import { Progress } from "@/components/ui/progress"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { getUserCredits } from "@/app/actions/credits"
 
 const plans = [
   { name: "1 Month", price: 100, per: "/mo", save: null, features: ["Resume Analysis", "10 JD Matches", "Basic Quizzes"] },
@@ -19,21 +20,52 @@ const plans = [
 export default function DashboardPage() {
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [activePlan, setActivePlan] = useState(1)
+  
+  const [resumeScore, setResumeScore] = useState(0)
+  const [creditBalance, setCreditBalance] = useState(0)
+  const [creditsUsed, setCreditsUsed] = useState(0)
+  const [readinessIndex, setReadinessIndex] = useState(0)
+  const [creditHistory, setCreditHistory] = useState<any[]>([])
+  
   const supabase = createClient()
 
   useEffect(() => {
-    async function getUser() {
+    async function loadData() {
       const { data: { user } } = await supabase.auth.getUser()
       setUser(user)
+      
+      if (user) {
+        // Fetch Live Credits
+        const { balance, history } = await getUserCredits()
+        setCreditBalance(balance)
+        setCreditHistory(history)
+        
+        // Calculate credits spent
+        const spent = history.reduce((acc, curr) => curr.type === "spent" ? acc + curr.amount : acc, 0)
+        setCreditsUsed(spent)
+        
+        // Fetch Resume Score from LocalStorage
+        const localResumeStr = localStorage.getItem('latest_resume_analysis')
+        let rScore = 0
+        if (localResumeStr) {
+          try {
+            const parsed = JSON.parse(localResumeStr)
+            rScore = parsed.score || 0
+            setResumeScore(rScore)
+          } catch(e) {}
+        }
+        
+        // Calculate dynamic readiness index (0-100)
+        const baseReadiness = 30 // base score just for signing up
+        const readiness = Math.min(100, Math.floor(baseReadiness + (rScore * 0.4) + (spent > 0 ? spent : 0)))
+        setReadinessIndex(readiness)
+      }
+
       setLoading(false)
     }
-    getUser()
+    loadData()
   }, [])
-
-  const resumeScore = 78
-  const creditBalance = 145
-  const readinessIndex = 72
-  const [activePlan, setActivePlan] = useState(1)
 
   return (
     <div className="flex flex-col gap-8">
@@ -140,13 +172,27 @@ export default function DashboardPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col items-center gap-4 pt-2 pb-6">
-            <CircularProgress
-              value={resumeScore}
-              size={160}
-              strokeWidth={12}
-              label="out of 100"
-            />
-            <ScoreLabel score={resumeScore} />
+            {resumeScore > 0 ? (
+              <>
+                <CircularProgress
+                  value={resumeScore}
+                  size={160}
+                  strokeWidth={12}
+                  label="out of 100"
+                />
+                <ScoreLabel score={resumeScore} />
+              </>
+            ) : (
+              <div className="flex flex-col items-center gap-3 py-6 mt-4 opacity-70">
+                <div className="flex items-center justify-center size-14 rounded-full bg-muted/50 border border-dashed border-border text-muted-foreground">
+                  <FileText className="size-6 opacity-40" />
+                </div>
+                <div className="text-center">
+                  <p className="text-sm font-medium">No Resume Scored</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Upload your resume to get started</p>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -169,10 +215,10 @@ export default function DashboardPage() {
             </div>
             <div className="w-full flex flex-col gap-2">
               <div className="flex items-center justify-between text-xs text-muted-foreground">
-                <span>Used this month</span>
-                <span className="font-medium text-foreground">55 / 200</span>
+                <span>Used all-time</span>
+                <span className="font-medium text-foreground">{creditsUsed} total</span>
               </div>
-              <Progress value={27.5} className="h-2" />
+              <Progress value={Math.min((creditsUsed / 100) * 100, 100)} className="h-2" />
             </div>
           </CardContent>
         </Card>
@@ -201,7 +247,7 @@ export default function DashboardPage() {
 
       {/* Activity Calendar + Avg Time Side by Side */}
       <div className="grid gap-6 md:grid-cols-[1fr_280px]">
-        <ActivityCalendar />
+        <ActivityCalendar userHistory={creditHistory} />
 
         {/* Avg Time Spent */}
         <Card>
@@ -379,8 +425,18 @@ function ReadinessLevel({ index }: { index: number }) {
   )
 }
 
-function ActivityCalendar() {
-  // Generate 16 weeks (approx 4 months) of mock activity data
+function ActivityCalendar({ userHistory }: { userHistory: any[] }) {
+  // Extract dates from history
+  const activeDates = new Map<string, number>()
+  if (userHistory) {
+    userHistory.forEach(item => {
+      const d = new Date(item.created_at)
+      const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`
+      activeDates.set(key, (activeDates.get(key) || 0) + 1)
+    })
+  }
+
+  // Generate 16 weeks (approx 4 months) of activity data
   const today = new Date()
   const weeks = 16
   const dayNames = ["Mon", "", "Wed", "", "Fri", "", ""]
@@ -406,19 +462,20 @@ function ActivityCalendar() {
       })
     }
 
-    const isFuture = d > today
-    // Deterministic pseudo-random based on date
-    const seed = d.getFullYear() * 1000 + d.getMonth() * 40 + d.getDate()
-    const rand = ((seed * 9301 + 49297) % 233280) / 233280
+    const isFuture = d > Math.max(today.getTime() + 86400000, Date.now()) // Avoid blocking today if timezone is slightly off
+    
+    // Check if this date has activity
+    const dateKey = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`
+    const activityCount = activeDates.get(dateKey) || 0
+    
     let level = 0
     if (!isFuture) {
-      if (rand > 0.85) level = 3
-      else if (rand > 0.6) level = 2
-      else if (rand > 0.35) level = 1
-      else level = 0
+      if (activityCount > 3) level = 3
+      else if (activityCount > 1) level = 2
+      else if (activityCount === 1) level = 1
     }
 
-    days.push({ date: d, level: isFuture ? -1 : level })
+    days.push({ date: d, level: d > today && d.getDate() !== today.getDate() ? -1 : level })
   }
 
   // Grid: 7 rows (Mon-Sun), N columns (weeks)

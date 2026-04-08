@@ -1,9 +1,8 @@
-"use client"
-
-import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { getUserCredits } from "@/app/actions/credits"
+import { format } from "date-fns"
 import {
   Wallet,
   Coins,
@@ -14,19 +13,9 @@ import {
   TrendingUp,
 } from "lucide-react"
 
-const creditHistory = [
-  { type: "earned" as const, description: "Resume Analysis", amount: 10, date: "Feb 21, 2026" },
-  { type: "spent" as const, description: "Mock Interview Unlock", amount: -20, date: "Feb 20, 2026" },
-  { type: "earned" as const, description: "Quiz Completed", amount: 5, date: "Feb 19, 2026" },
-  { type: "earned" as const, description: "JD Match Analysis", amount: 8, date: "Feb 18, 2026" },
-  { type: "spent" as const, description: "Career Counseling Session", amount: -30, date: "Feb 17, 2026" },
-  { type: "earned" as const, description: "Resume Analysis", amount: 10, date: "Feb 16, 2026" },
-  { type: "earned" as const, description: "Roadmap Week Completed", amount: 15, date: "Feb 15, 2026" },
-  { type: "spent" as const, description: "Advanced Report", amount: -10, date: "Feb 14, 2026" },
-]
-
-export default function CreditsWalletPage() {
-  const [balance] = useState(145)
+export default async function CreditsWalletPage() {
+  const creditInfo = await getUserCredits()
+  const { balance, total_earned, total_spent, history } = creditInfo
 
   return (
     <div className="flex flex-col gap-8">
@@ -41,7 +30,7 @@ export default function CreditsWalletPage() {
 
       {/* Balance Cards */}
       <div className="grid gap-4 sm:grid-cols-3">
-        <Card className="bg-primary text-primary-foreground border-0">
+        <Card className="bg-primary text-primary-foreground border-0 shadow-lg">
           <CardContent className="flex flex-col gap-2 pt-6">
             <div className="flex items-center gap-2">
               <Wallet className="size-5" />
@@ -60,7 +49,7 @@ export default function CreditsWalletPage() {
                 Total Earned
               </span>
             </div>
-            <p className="text-3xl font-bold text-foreground">248</p>
+            <p className="text-3xl font-bold text-foreground">{total_earned}</p>
             <p className="text-sm text-muted-foreground">All time</p>
           </CardContent>
         </Card>
@@ -68,12 +57,12 @@ export default function CreditsWalletPage() {
         <Card>
           <CardContent className="flex flex-col gap-2 pt-6">
             <div className="flex items-center gap-2">
-              <Coins className="size-5 text-warning" />
+              <Coins className="size-5 text-destructive" />
               <span className="text-sm font-medium text-muted-foreground">
                 Total Spent
               </span>
             </div>
-            <p className="text-3xl font-bold text-foreground">103</p>
+            <p className="text-3xl font-bold text-foreground">{total_spent}</p>
             <p className="text-sm text-muted-foreground">All time</p>
           </CardContent>
         </Card>
@@ -84,34 +73,34 @@ export default function CreditsWalletPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Lock className="size-5 text-primary" />
-            Premium Features
+            Premium Feature Pricing
           </CardTitle>
           <CardDescription>
-            Use your credits to unlock premium features.
+            Features run on credits. Ensure your balance is sufficient to unlock them.
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <FeatureCard
               icon={Mic}
-              title="Mock Interview"
-              cost={20}
-              description="AI-powered mock interview with feedback"
-              available={balance >= 20}
-            />
-            <FeatureCard
-              icon={TrendingUp}
-              title="Advanced Report"
+              title="Resume Analysis"
               cost={10}
-              description="Detailed career path analysis"
+              description="AI-powered analysis of your resume."
               available={balance >= 10}
             />
             <FeatureCard
+              icon={TrendingUp}
+              title="JD Match"
+              cost={5}
+              description="Intelligent match against job descriptions."
+              available={balance >= 5}
+            />
+            <FeatureCard
               icon={Lock}
-              title="Career Counseling"
-              cost={30}
-              description="1-on-1 AI career counseling session"
-              available={balance >= 30}
+              title="Cold Email Gen"
+              cost={5}
+              description="Hyper-personalized recruiter outreach."
+              available={balance >= 5}
             />
           </div>
         </CardContent>
@@ -124,44 +113,52 @@ export default function CreditsWalletPage() {
         </CardHeader>
         <CardContent>
           <div className="flex flex-col divide-y divide-border">
-            {creditHistory.map((item, i) => (
-              <div
-                key={i}
-                className="flex items-center justify-between py-3.5 first:pt-0 last:pb-0"
-              >
-                <div className="flex items-center gap-3">
-                  <div
-                    className={`flex items-center justify-center size-9 rounded-full ${
+            {history.length > 0 ? (
+              history.map((item) => (
+                <div
+                  key={item.id}
+                  className="flex items-center justify-between py-3.5 first:pt-0 last:pb-0"
+                >
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={`flex items-center justify-center size-9 rounded-full ${
+                        item.type === "earned"
+                          ? "bg-success/10"
+                          : "bg-destructive/10"
+                      }`}
+                    >
+                      {item.type === "earned" ? (
+                        <ArrowUpRight className="size-4 text-success" />
+                      ) : (
+                        <ArrowDownRight className="size-4 text-destructive" />
+                      )}
+                    </div>
+                    <div className="flex flex-col">
+                      <p className="text-sm font-medium text-foreground">
+                        {item.description}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {format(new Date(item.created_at), "MMM dd, yyyy h:mm a")}
+                      </p>
+                    </div>
+                  </div>
+                  <span
+                    className={`text-sm font-semibold ${
                       item.type === "earned"
-                        ? "bg-success/10"
-                        : "bg-destructive/10"
+                        ? "text-success"
+                        : "text-destructive"
                     }`}
                   >
-                    {item.type === "earned" ? (
-                      <ArrowUpRight className="size-4 text-success" />
-                    ) : (
-                      <ArrowDownRight className="size-4 text-destructive" />
-                    )}
-                  </div>
-                  <div className="flex flex-col">
-                    <p className="text-sm font-medium text-foreground">
-                      {item.description}
-                    </p>
-                    <p className="text-xs text-muted-foreground">{item.date}</p>
-                  </div>
+                    {item.type === "earned" ? "+" : ""}
+                    {item.amount}
+                  </span>
                 </div>
-                <span
-                  className={`text-sm font-semibold ${
-                    item.type === "earned"
-                      ? "text-success"
-                      : "text-destructive"
-                  }`}
-                >
-                  {item.type === "earned" ? "+" : ""}
-                  {item.amount}
-                </span>
+              ))
+            ) : (
+              <div className="py-8 text-center text-sm text-muted-foreground">
+                No credit history found. Start using features to see activity!
               </div>
-            ))}
+            )}
           </div>
         </CardContent>
       </Card>
@@ -203,7 +200,7 @@ function FeatureCard({
         className="w-full"
       >
         {available ? (
-          <>Unlock</>
+          <>Sufficient Balance</>
         ) : (
           <>
             <Lock className="size-3" />

@@ -18,6 +18,7 @@ import {
   Mic,
   LogOut,
   Lock,
+  Mail,
 } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { useEffect, useState } from "react"
@@ -27,6 +28,7 @@ const mainNav = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { label: "Resume Analysis", href: "/dashboard/resume", icon: FileText },
   { label: "JD Match", href: "/dashboard/jd-match", icon: Briefcase },
+  { label: "Cold Email/InMail", href: "/dashboard/cold-email", icon: Mail },
   { label: "Skill Roadmap", href: "/dashboard/roadmap", icon: Map },
   { label: "Quizzes", href: "/dashboard/quizzes", icon: Brain },
   { label: "Placement Readiness", href: "/dashboard/readiness", icon: BarChart3 },
@@ -39,7 +41,6 @@ const premiumNav = [
 
 const bottomNav = [
   { label: "Credits Wallet", href: "/dashboard/credits", icon: Wallet },
-  { label: "Admin Panel", href: "/dashboard/admin", icon: ShieldCheck },
 ]
 
 export function AppSidebar() {

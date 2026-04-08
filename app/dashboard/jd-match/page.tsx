@@ -19,6 +19,8 @@ import {
   BarChart3,
   FileText,
 } from "lucide-react"
+import { useFeatureWithCredits } from "@/app/actions/credits"
+import { toast } from "sonner"
 
 const suggestedRoles = [
   {
@@ -234,15 +236,26 @@ export default function JDMatchPage() {
   const matchData = customMatchData || (selectedRole && roleMatchData[selectedRole] ? roleMatchData[selectedRole] : defaultMatch)
   const matchLabel = getMatchLabel(matchData.matchPercentage)
 
-  function handleMatch() {
+  async function handleMatch() {
     if (!jobDescription.trim()) return
     setIsMatching(true)
+    
+    // Attempt Credit Deduction
+    const { success, message } = await useFeatureWithCredits(5, "JD Match Analysis")
+    
+    if (!success) {
+      toast.error(message || "Insufficient credits")
+      setIsMatching(false)
+      return
+    }
+
     setTimeout(() => {
       if (resumeAnalysis) {
         setCustomMatchData(calculateDynamicMatch(jobDescription, resumeAnalysis))
       }
       setIsMatching(false)
       setShowResults(true)
+      toast.success("Match complete! (-5 Credits)")
     }, 1500)
   }
 

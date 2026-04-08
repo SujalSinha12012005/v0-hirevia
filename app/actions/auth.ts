@@ -7,7 +7,10 @@ import { headers } from 'next/headers'
 
 export async function signInWithGoogle() {
   const supabase = await createClient()
-  const origin = (await headers()).get('origin')
+  const headersList = await headers()
+  const host = headersList.get('x-forwarded-host') || headersList.get('host') || 'localhost:3000'
+  const protocol = headersList.get('x-forwarded-proto') || 'http'
+  const origin = `${protocol}://${host}`
   
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',

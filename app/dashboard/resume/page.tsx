@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Input } from "@/components/ui/input"
+import { useFeatureWithCredits } from "@/app/actions/credits"
+import { toast } from "sonner"
 import {
   Upload,
   FileText,
@@ -19,6 +21,7 @@ import {
   Bot,
   User,
 } from "lucide-react"
+import { generateResumeChatResponse } from "@/app/actions/gemini"
 
 // Simple string hash function to generate consistent pseudo-random numbers
 function hashString(str: string): number {
@@ -81,7 +84,6 @@ function generateDynamicAnalysis(filename: string | null) {
     bestFitRole,
     missingSkills,
     suggestions,
-    creditsEarned: 10 + (score % 5),
   }
 }
 
@@ -100,9 +102,19 @@ export default function ResumeAnalysisPage() {
     }
   }
 
-  function handleAnalyze() {
+  async function handleAnalyze() {
     if (!fileName) return
     setIsAnalyzing(true)
+
+    // Attempt Credit Deduction
+    const { success, message } = await useFeatureWithCredits(10, "Resume Analysis")
+    
+    if (!success) {
+      toast.error(message || "Insufficient credits")
+      setIsAnalyzing(false)
+      return
+    }
+
     setTimeout(() => {
       const generated = generateDynamicAnalysis(fileName)
       setCurrentAnalysis(generated)
@@ -115,6 +127,7 @@ export default function ResumeAnalysisPage() {
       }
       setIsAnalyzing(false)
       setShowResults(true)
+      toast.success("Analysis Complete! (-10 Credits)")
     }, 1500)
   }
 
@@ -179,18 +192,6 @@ export default function ResumeAnalysisPage() {
       {/* Results */}
       {showResults && (
         <div className="flex flex-col gap-6 animate-in fade-in-0 slide-in-from-bottom-4 duration-500">
-          {/* Credits Earned Banner */}
-          <div className="flex items-center gap-3 rounded-xl bg-success/10 border border-success/20 px-4 py-3">
-            <Coins className="size-5 text-success" />
-            <p className="text-sm font-medium text-foreground">
-              You earned{" "}
-              <span className="font-bold text-success">
-                {currentAnalysis!.creditsEarned} credits
-              </span>{" "}
-              for analyzing your resume!
-            </p>
-          </div>
-
           <div className="grid gap-6 lg:grid-cols-2">
             {/* Score Card */}
             <Card>
@@ -319,29 +320,8 @@ const suggestedQuestions = [
   "How can I improve my resume score?",
   "What projects should I add?",
   "Is my resume ATS-friendly?",
-  "How do I highlight MERN skills?",
+  "How do I highlight my skills?",
 ]
-
-const botResponses: Record<string, string> = {
-  "how can i improve my resume score?":
-    "Focus on three areas: 1) Add quantifiable achievements to each project (e.g., 'Reduced API response time by 40%'). 2) Include keywords from job descriptions like TypeScript, REST APIs, and CI/CD. 3) Add a concise professional summary at the top highlighting your MERN stack expertise.",
-  "what projects should i add?":
-    "For a MERN Stack Developer role, include: 1) A full-stack CRUD app with authentication (shows end-to-end ability). 2) A real-time feature using Socket.io or WebSockets. 3) A project deployed on AWS/Vercel with CI/CD pipeline. Make sure each project lists the tech stack and your specific contributions.",
-  "is my resume ats-friendly?":
-    "Your formatting score is 90%, which is good. However, your keyword optimization is at 65%. To improve ATS compatibility: use standard section headings (Experience, Education, Skills), avoid tables or columns, spell out acronyms at least once, and mirror exact phrases from the job description.",
-  "how do i highlight mern skills?":
-    "Create a dedicated 'Technical Skills' section with clear categories: Frontend (React, Redux, HTML/CSS, Tailwind), Backend (Node.js, Express.js), Database (MongoDB, Mongoose), and Tools (Git, Docker, Postman). In your project descriptions, specifically mention how you used each part of the MERN stack.",
-}
-
-function getResponse(input: string): string {
-  const key = input.toLowerCase().trim()
-  for (const [q, a] of Object.entries(botResponses)) {
-    if (key.includes(q.split(" ").slice(0, 3).join(" ")) || q.includes(key.split(" ").slice(0, 3).join(" "))) {
-      return a
-    }
-  }
-  return "That's a great question! Based on your resume analysis, I'd suggest focusing on the missing skills flagged above -- TypeScript patterns, testing, and system design basics. Adding these to your resume with relevant project examples would significantly boost your score. Want me to elaborate on any of these?"
-}
 
 function ResumeChat() {
   const [messages, setMessages] = useState<Message[]>([
@@ -360,25 +340,36 @@ function ResumeChat() {
     }
   }, [messages, isTyping])
 
-  function handleSend() {
+  async function handleSend() {
     const text = input.trim()
     if (!text) return
     setMessages((prev) => [...prev, { role: "user", text }])
     setInput("")
     setIsTyping(true)
-    setTimeout(() => {
-      setIsTyping(false)
-      setMessages((prev) => [...prev, { role: "bot", text: getResponse(text) }])
-    }, 1000 + Math.random() * 800)
+    
+    // Call Gemini! `messages` is accurately the previous history.
+    const res = await generateResumeChatResponse(text, messages)
+    
+    setIsTyping(false)
+    if (res.success) {
+      setMessages((prev) => [...prev, { role: "bot", text: res.text! }])
+    } else {
+      setMessages((prev) => [...prev, { role: "bot", text: res.message || "Failed to reach AI." }])
+    }
   }
 
-  function handleSuggestion(q: string) {
+  async function handleSuggestion(q: string) {
     setMessages((prev) => [...prev, { role: "user", text: q }])
     setIsTyping(true)
-    setTimeout(() => {
-      setIsTyping(false)
-      setMessages((prev) => [...prev, { role: "bot", text: getResponse(q) }])
-    }, 1000 + Math.random() * 800)
+    
+    const res = await generateResumeChatResponse(q, messages)
+    
+    setIsTyping(false)
+    if (res.success) {
+      setMessages((prev) => [...prev, { role: "bot", text: res.text! }])
+    } else {
+      setMessages((prev) => [...prev, { role: "bot", text: res.message || "Failed to reach AI." }])
+    }
   }
 
   return (

@@ -43,7 +43,7 @@ const bottomNav = [
   { label: "Credits Wallet", href: "/dashboard/credits", icon: Wallet },
 ]
 
-export function AppSidebar() {
+export function SidebarContent() {
   const pathname = usePathname()
   const [user, setUser] = useState<SupabaseUser | null>(null)
   const [loading, setLoading] = useState(true)
@@ -56,10 +56,10 @@ export function AppSidebar() {
       setLoading(false)
     }
     getUser()
-  }, [])
+  }, [supabase.auth])
 
   return (
-    <aside className="flex h-screen w-64 flex-col bg-sidebar text-sidebar-foreground border-r border-sidebar-border shrink-0">
+    <>
       <div className="flex items-center gap-2.5 px-6 py-5 border-b border-sidebar-border">
         <div className="flex items-center justify-center size-8 rounded-lg bg-sidebar-primary">
           <Sparkles className="size-4 text-sidebar-primary-foreground" />
@@ -186,6 +186,14 @@ export function AppSidebar() {
           </div>
         )}
       </div>
+    </>
+  )
+}
+
+export function AppSidebar() {
+  return (
+    <aside className="hidden h-screen w-64 flex-col bg-sidebar text-sidebar-foreground border-r border-sidebar-border shrink-0 md:flex">
+      <SidebarContent />
     </aside>
   )
 }

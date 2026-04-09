@@ -24,30 +24,30 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true)
   const [activePlan, setActivePlan] = useState(1)
   const [isModalOpen, setIsModalOpen] = useState(false)
-  
+
   const [resumeScore, setResumeScore] = useState(0)
   const [creditBalance, setCreditBalance] = useState(0)
   const [creditsUsed, setCreditsUsed] = useState(0)
   const [readinessIndex, setReadinessIndex] = useState(0)
   const [creditHistory, setCreditHistory] = useState<any[]>([])
-  
+
   const supabase = createClient()
 
   useEffect(() => {
     async function loadData() {
       const { data: { user } } = await supabase.auth.getUser()
       setUser(user)
-      
+
       if (user) {
         // Fetch Live Credits
         const { balance, history } = await getUserCredits()
         setCreditBalance(balance)
         setCreditHistory(history)
-        
+
         // Calculate credits spent
         const spent = history.reduce((acc, curr) => curr.type === "spent" ? acc + curr.amount : acc, 0)
         setCreditsUsed(spent)
-        
+
         // Fetch Live Resume Score from Database
         const latestResume = await getLatestResumeAnalysis()
         let rScore = 0
@@ -55,7 +55,7 @@ export default function DashboardPage() {
           rScore = latestResume.score || 0
           setResumeScore(rScore)
         }
-        
+
         // Calculate dynamic readiness index (0-100)
         const baseReadiness = 30 // base score just for signing up
         const readiness = Math.min(100, Math.floor(baseReadiness + (rScore * 0.4) + (spent > 0 ? spent : 0)))
@@ -84,89 +84,15 @@ export default function DashboardPage() {
           </p>
         </div>
 
-        {/* Subscription Plan - pill toggle + card */}
-        <div className="shrink-0 flex flex-col items-end gap-3">
-          {/* Pill toggle for plans */}
-          <div className="flex items-center rounded-full bg-muted/70 p-1">
-            {plans.map((plan, i) => (
-              <button
-                key={plan.name}
-                onClick={() => setActivePlan(i)}
-                className={`relative rounded-full px-4 py-1.5 text-xs font-medium transition-all duration-200 ${
-                  activePlan === i
-                    ? "bg-card text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {plan.name}
-                {plan.popular && activePlan !== i && (
-                  <span className="absolute -top-1 -right-1 size-2 rounded-full bg-primary animate-pulse" />
-                )}
-              </button>
-            ))}
-          </div>
-
-          {/* Active plan card */}
-          <div className="relative w-[260px] rounded-2xl border border-border bg-card p-5 shadow-sm">
-            {/* Top accent bar */}
-            <div className="absolute top-0 left-5 right-5 h-[2px] rounded-b-full bg-primary" />
-
-            <div className="flex items-start justify-between">
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-semibold text-foreground">
-                    {plans[activePlan].name}
-                  </span>
-                  {plans[activePlan].popular && (
-                    <Badge variant="secondary" className="bg-primary/10 text-primary text-[10px] font-medium px-1.5 py-0 border-0">
-                      Popular
-                    </Badge>
-                  )}
-                </div>
-                {plans[activePlan].save && (
-                  <span className="text-[11px] font-medium text-primary mt-0.5 block">
-                    {plans[activePlan].save}
-                  </span>
-                )}
-              </div>
-              <div className="text-right">
-                <span className="text-2xl font-bold text-foreground">
-                  {"₹"}{plans[activePlan].price}
-                </span>
-                <span className="text-xs text-muted-foreground">{plans[activePlan].per}</span>
-              </div>
-            </div>
-
-            <div className="mt-4 grid grid-cols-2 gap-x-3 gap-y-2">
-              {plans[activePlan].features.map((f) => (
-                <div key={f} className="flex items-center gap-1.5">
-                  <div className="flex items-center justify-center size-4 rounded-full bg-primary/10">
-                    <Check className="size-2.5 text-primary" />
-                  </div>
-                  <span className="text-[11px] text-muted-foreground leading-tight">{f}</span>
-                </div>
-              ))}
-            </div>
-
-            <Button
-              onClick={() => setIsModalOpen(true)}
-              size="sm"
-              className="mt-4 h-8 text-xs font-medium w-full rounded-lg gap-1.5"
-            >
-              <Sparkles className="size-3" />
-              Get {plans[activePlan].name} Plan
-            </Button>
-          </div>
-        </div>
       </div>
 
       <SubscriptionPaymentModal
-         isOpen={isModalOpen}
-         onClose={() => setIsModalOpen(false)}
-         planName={`${plans[activePlan].name} Premium`}
-         price={plans[activePlan].price}
-         tier={plans[activePlan].tier}
-         durationMonths={plans[activePlan].duration}
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        planName={`${plans[activePlan].name} Premium`}
+        price={plans[activePlan].price}
+        tier={plans[activePlan].tier}
+        durationMonths={plans[activePlan].duration}
       />
 
       {/* Three Core Metrics */}
@@ -309,13 +235,12 @@ export default function DashboardPage() {
                 {quiz.tag && (
                   <Badge
                     variant="secondary"
-                    className={`text-[10px] px-1.5 py-0 border-0 shrink-0 ${
-                      quiz.tag === "Hot"
+                    className={`text-[10px] px-1.5 py-0 border-0 shrink-0 ${quiz.tag === "Hot"
                         ? "bg-destructive/10 text-destructive"
                         : quiz.tag === "New"
                           ? "bg-success/10 text-success"
                           : "bg-primary/10 text-primary"
-                    }`}
+                      }`}
                   >
                     {quiz.tag}
                   </Badge>
@@ -448,11 +373,11 @@ function ActivityCalendar({ userHistory, readinessIndex }: { userHistory: any[],
     }
 
     const isFuture = d.getTime() > Math.max(today.getTime() + 86400000, Date.now()) // Avoid blocking today if timezone is slightly off
-    
+
     // Check if this date has activity
     const dateKey = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`
     const activityCount = activeDates.get(dateKey) || 0
-    
+
     let level = 0
     if (!isFuture) {
       if (activityCount > 3) level = 3
@@ -612,9 +537,8 @@ function ActivityCalendar({ userHistory, readinessIndex }: { userHistory: any[],
                         <Tooltip key={dayIdx}>
                           <TooltipTrigger asChild>
                             <div
-                              className={`size-[13px] rounded-sm transition-colors ${
-                                levelColors[cell.level]
-                              } ${cell.level > 0 ? "hover:ring-2 hover:ring-primary/30" : ""}`}
+                              className={`size-[13px] rounded-sm transition-colors ${levelColors[cell.level]
+                                } ${cell.level > 0 ? "hover:ring-2 hover:ring-primary/30" : ""}`}
                             />
                           </TooltipTrigger>
                           <TooltipContent
@@ -650,38 +574,38 @@ function AverageTimeSpent({ userHistory }: { userHistory: any[] }) {
     { day: "Sat", mins: 0 },
     { day: "Sun", mins: 0 },
   ]
-  
+
   if (userHistory && userHistory.length > 0) {
     // Determine start of current week (Monday)
     const now = new Date()
     const currentDay = now.getDay()
     const distanceToMonday = currentDay === 0 ? 6 : currentDay - 1
-    
+
     const startOfWeek = new Date(now)
     startOfWeek.setHours(0, 0, 0, 0)
     startOfWeek.setDate(now.getDate() - distanceToMonday)
 
     userHistory.forEach(item => {
-       const d = new Date(item.created_at)
-       if (d >= startOfWeek) {
-         const dayIndex = d.getDay() === 0 ? 6 : d.getDay() - 1 // Make monday 0
-         if (dayIndex >= 0 && dayIndex < 7) {
-            weekData[dayIndex].mins += 15 // Add 15 mins for every interaction this week
-         }
-       }
+      const d = new Date(item.created_at)
+      if (d >= startOfWeek) {
+        const dayIndex = d.getDay() === 0 ? 6 : d.getDay() - 1 // Make monday 0
+        if (dayIndex >= 0 && dayIndex < 7) {
+          weekData[dayIndex].mins += 15 // Add 15 mins for every interaction this week
+        }
+      }
     })
   }
 
   // Ensure minimum baseline so chart isn't totally flat for new users (UX feature)
   // Or just leave it pure real-time. For "real time demo", we'll just show actual.
   let totalMins = weekData.reduce((acc, curr) => acc + curr.mins, 0)
-  
+
   // If absolute 0, fake a tiny bit of time for today just to show the UI works 
   // (otherwise a completely blank bar chart looks broken to unfamiliar users)
   if (totalMins === 0) {
-     const todayIndex = new Date().getDay() === 0 ? 6 : new Date().getDay() - 1
-     weekData[todayIndex].mins += 20 // At least 20 mins of "exploring dashboard" today
-     totalMins = 20
+    const todayIndex = new Date().getDay() === 0 ? 6 : new Date().getDay() - 1
+    weekData[todayIndex].mins += 20 // At least 20 mins of "exploring dashboard" today
+    totalMins = 20
   }
 
   const hours = Math.floor(totalMins / 60)
@@ -692,7 +616,7 @@ function AverageTimeSpent({ userHistory }: { userHistory: any[] }) {
     <>
       <div className="flex items-baseline gap-2">
         <span className="text-3xl font-bold text-foreground">
-           {hours > 0 ? `${hours}h ` : ""}{remainingMins}m
+          {hours > 0 ? `${hours}h ` : ""}{remainingMins}m
         </span>
         <span className="text-xs font-medium text-success">Live Tracked</span>
       </div>

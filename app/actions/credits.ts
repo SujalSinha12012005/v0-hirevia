@@ -84,3 +84,60 @@ export async function useFeatureWithCredits(
     return { success: false, message: "Unknown error occurred." }
   }
 }
+
+export async function addPurchasedCredits(
+  amount: number,
+  packageDetails: string
+): Promise<{ success: boolean; message?: string }> {
+  try {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+      return { success: false, message: "User not authenticated." }
+    }
+
+    // Insert into credit history securely. 
+    // Usually, we would rely on a trigger to auto-update the balance.
+    // If there is no trigger, we update the balance directly as well.
+    const { data: balanceData } = await supabase
+      .from("user_balances")
+      .select("balance, total_earned")
+      .eq("user_id", user.id)
+      .single()
+
+    if (!balanceData) {
+      return { success: false, message: "Could not retrieve user wallet." }
+    }
+
+    // 1. Update user balances
+    const { error: updateError } = await supabase
+      .from("user_balances")
+      .update({
+        balance: balanceData.balance + amount,
+        total_earned: balanceData.total_earned + amount,
+      })
+      .eq("user_id", user.id)
+
+    if (updateError) {
+      console.error("Error updating balance:", updateError)
+      return { success: false, message: "Failed to update balance." }
+    }
+
+    // 2. Insert ledger record
+    await supabase.from("credit_history").insert({
+      user_id: user.id,
+      type: "earned",
+      amount: amount,
+      description: `Purchased: ${packageDetails}`,
+    })
+
+    // Revalidate screen
+    revalidatePath("/dashboard/credits")
+    return { success: true }
+  } catch (err: any) {
+    console.error("Credit purchase error:", err)
+    return { success: false, message: "Payment processing failed internally." }
+  }
+}
+
